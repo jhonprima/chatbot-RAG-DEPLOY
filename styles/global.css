@@ -1,0 +1,16 @@
+/* Scroll thumb styling */
+:global(::-webkit-scrollbar) {
+    width: 6px;
+  }
+  
+  :global(::-webkit-scrollbar)k {
+    background: transparent;
+  }
+  :global(::-webkit-scrollbar) {
+    background-color: F7F7FF;
+    border-radius: 20px;
+  }
+  
+  :global(::-webkit-scrollbar) {
+    background-color: #9ca3af;
+  }

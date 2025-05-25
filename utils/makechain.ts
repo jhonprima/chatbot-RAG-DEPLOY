@@ -1,4 +1,3 @@
-import { HumanMessage } from "@langchain/core/messages";
 import { ChatCohere } from "@langchain/cohere";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";

@@ -6,3 +6,4 @@ export type Message = {
   isStreaming?: boolean;
   sourceDocs?: Document[];
 };
+  
