@@ -1,16 +1,11 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { Menu, LogOut, Plus, MessageCircle, Send, X } from 'lucide-react';
 import { useRouter } from 'next/router';
-import Layout from '@/components/layout';
-import Image from 'next/image';
-import ReactMarkdown from 'react-markdown';
-import LoadingDots from '@/components/ui/LoadingDots';
-import { Document } from 'langchain/document';
 import { v4 as uuidv4 } from 'uuid';
+import { Document } from 'langchain/document';
+import { Menu, LogOut, Plus, MessageCircle, Send, X } from 'lucide-react';
 
-// Type definitions
 interface UserData {
   id: string;
   name: string;
@@ -35,6 +30,7 @@ interface ChatState {
 
 export default function Home() {
   const router = useRouter();
+
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,149 +42,173 @@ export default function Home() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isNewChat, setIsNewChat] = useState(true);
 
-  const [messageState, setMessageState] = useState<{
-    messages: { message: string; type: string; sourceDocs?: any }[];
-    history: [string, string][];
-  }>(() => ({
-    messages: [
-      { message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' },
-    ],
+  const [messageState, setMessageState] = useState<ChatState>({
+    messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
     history: [],
-  }));
+  });
 
   const [chatHistory, setChatHistory] = useState<Chat[]>([]);
-  const [activeChatId, setActiveChatId] = useState('');
+  const [activeChatId, setActiveChatId] = useState<string>('');
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLInputElement>(null);
 
-  // Responsive handling
+  const generateSessionId = () =>
+    `session_${Date.now()}_${uuidv4().substring(0, 8)}`;
+
+  const fetchSavedState = async (chatId: string, userId: string) => {
+    try {
+      const res = await fetch(`/api/chat-contents?chat_id=${chatId}&user_id=${userId}`);
+      if (!res.ok) throw new Error('Failed to fetch chat content');
+      const data = await res.json();
+
+      if (data.messages && data.history) {
+        const newState = {
+          messages: data.messages,
+          history: data.history,
+        };
+        setMessageState(newState);
+        
+        // Simpan ke localStorage untuk persist state
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`chat_state_${chatId}`, JSON.stringify({
+            messages: data.messages,
+            history: data.history,
+            timestamp: Date.now(),
+          }));
+        }
+        
+        // Set isNewChat berdasarkan jumlah pesan
+        setIsNewChat(data.messages.length <= 1);
+        
+        return newState;
+      } else {
+        const defaultState = {
+          messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
+          history: [],
+        };
+        setMessageState(defaultState);
+        setIsNewChat(true);
+        return defaultState;
+      }
+    } catch (err) {
+      console.error('Failed to fetch chat content:', err);
+      const defaultState = {
+        messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
+        history: [],
+      };
+      setMessageState(defaultState);
+      setIsNewChat(true);
+      return defaultState;
+    }
+  };
+
+  const fetchUserChats = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/user-chats?user_id=${userId}`);
+      if (!res.ok) throw new Error('Failed to fetch user chats');
+      const response = await res.json();
+      const data: Chat[] = response.data || [];
+      // Urutkan berdasarkan waktu terbaru (asumsi ada created_at atau timestamp)
+      // Jika tidak ada, urutkan berdasarkan ID yang mengandung timestamp
+      const sortedData = data.sort((a, b) => {
+        // Extract timestamp dari session ID
+        const timestampA = parseInt(a.id.split('_')[1]) || 0;
+        const timestampB = parseInt(b.id.split('_')[1]) || 0;
+        return timestampB - timestampA; // Terbaru di atas
+      });
+      setChatHistory(Array.isArray(sortedData) ? sortedData : []);
+      return sortedData;
+    } catch (err) {
+      console.error('Failed to fetch user chats:', err);
+      setChatHistory([]);
+      return [];
+    }
+  };
+
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
-      if (mobile && showSidebar) {
-        setShowSidebar(false);
-      }
+      if (mobile && showSidebar) setShowSidebar(false);
     };
-
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [showSidebar]);
 
-  const generateSessionId = () => `session_${Date.now()}_${uuidv4().substring(0, 8)}`;
-
-  // Initialize user session and chats
   useEffect(() => {
-    let isMounted = true; // Prevent state updates if component unmounted
-    
+    let isMounted = true;
+
     const initializeApp = async () => {
       try {
+        if (typeof window === 'undefined') return;
+        
         const storedUser = localStorage.getItem('user');
         if (!storedUser) {
           router.push('/login');
           return;
         }
 
-        const userData = JSON.parse(storedUser);
-        if (!userData.name || !userData.id) {
-          throw new Error('Invalid user data');
-        }
+        const userData: UserData = JSON.parse(storedUser);
+        if (!userData.name || !userData.id) throw new Error('Invalid user');
 
-        if (!isMounted) return; // Exit if component unmounted
-
+        if (!isMounted) return;
         setUsername(userData.name);
         setUserId(userData.id);
 
-        const loadChatHistory = async () => {
-          try {
-            const res = await fetch(`/api/user-chats?user_id=${userData.id}`);
-            if (!res.ok) throw new Error('Failed to load chats');
-            
-            const data = await res.json();
-            const chats = Array.isArray(data) ? data : [];
-            
-            if (!isMounted) return []; // Exit if component unmounted
-            setChatHistory(chats);
-            
-            return chats;
-          } catch (err) {
-            console.error('Error loading chat history:', err);
-            if (isMounted) setChatHistory([]);
-            return [];
-          }
-        };
+        // Fetch existing chats
+        const existingChats = await fetchUserChats(userData.id);
 
-        const loadedChats = await loadChatHistory();
-        if (!isMounted) return; // Exit if component unmounted
-
-        // Initialize active chat
+        // Cek apakah ada active chat dari localStorage
         let activeId = localStorage.getItem('activeChatId');
-        const needsNewChat = !activeId || !loadedChats.some(chat => chat.id === activeId);
         
-        if (needsNewChat) {
-          activeId = generateSessionId();
-          localStorage.setItem('activeChatId', activeId);
-          setIsNewChat(true);
+        // Validasi apakah activeId masih ada di chat history
+        if (activeId && existingChats.some(chat => chat.id === activeId)) {
+          // Chat masih ada, load state-nya
+          setActiveChatId(activeId);
           
-          // Only create chat if component is still mounted
-          if (isMounted) {
-            setChatHistory(prev => [...prev, { id: activeId, title: 'Chat Baru' }]);
-            
-            // Create chat in background without blocking UI
-            fetch('/api/create-chat', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                user_id: userData.id,
-                chat_id: activeId,
-                title: 'Chat Baru',
-              }),
-            }).catch(err => {
-              console.error('Failed to create new chat:', err);
-            });
-          }
-        } else {
-          setIsNewChat(false);
-        }
-
-        if (!isMounted) return; // Exit if component unmounted
-        setActiveChatId(activeId);
-
-        // Load chat state
-        const savedState = localStorage.getItem(`chat_state_${activeId}`);
-        if (savedState && isMounted) {
-          try {
-            const parsedState = JSON.parse(savedState);
-            if (parsedState.messages && parsedState.history) {
-              setMessageState(parsedState);
-              if (parsedState.messages.length > 1) {
-                setIsNewChat(false);
+          // Coba load dari localStorage dulu
+          const savedState = localStorage.getItem(`chat_state_${activeId}`);
+          if (savedState) {
+            try {
+              const parsedState = JSON.parse(savedState);
+              if (parsedState.messages && parsedState.history) {
+                setMessageState(parsedState);
+                setIsNewChat(parsedState.messages.length <= 1);
               }
+            } catch {
+              // Jika localStorage rusak, fetch dari server
+              await fetchSavedState(activeId, userData.id);
             }
-          } catch (err) {
-            console.error('Error parsing saved state:', err);
-          }
-        }
-
-        // Load sidebar preference
-        if (isMounted) {
-          const sidebarPref = localStorage.getItem('showSidebar');
-          if (sidebarPref !== null) {
-            setShowSidebar(sidebarPref === 'true');
           } else {
-            setShowSidebar(!isMobile);
+            // Jika tidak ada di localStorage, fetch dari server
+            await fetchSavedState(activeId, userData.id);
           }
+          
 
-          setIsInitialized(true);
+        } else {
+          // Tidak ada active chat atau chat sudah tidak ada, reset ke default
+          setActiveChatId('');
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('activeChatId');
+          }
+          setMessageState({
+            messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
+            history: [],
+          });
+          setIsNewChat(true);
         }
+
+        const sidebarPref = localStorage.getItem('showSidebar');
+        setShowSidebar(sidebarPref !== null ? sidebarPref === 'true' : !isMobile);
+        setIsInitialized(true);
       } catch (err) {
         console.error('Initialization error:', err);
-        localStorage.removeItem('user');
-        if (isMounted) {
-          router.push('/login');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('user');
         }
+        if (isMounted) router.push('/login');
       }
     };
 
@@ -196,30 +216,51 @@ export default function Home() {
       initializeApp();
     }
 
-    // Cleanup function
     return () => {
       isMounted = false;
     };
-  }, [router, isInitialized]); // Removed isMobile from dependencies
+  }, [router, isInitialized, isMobile]);
 
-  // Save chat state to localStorage
+  // Simpan state ke localStorage dan server setiap kali messageState berubah
   useEffect(() => {
-    if (isInitialized && activeChatId) {
-      const saveData = {
-        messages: messageState.messages,
-        history: messageState.history,
-        timestamp: Date.now()
-      };
-      localStorage.setItem(`chat_state_${activeChatId}`, JSON.stringify(saveData));
-    }
-  }, [messageState, activeChatId, isInitialized]);
+    if (isInitialized && activeChatId && messageState.messages.length > 1) {
+      // Simpan ke localStorage untuk akses cepat
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`chat_state_${activeChatId}`, JSON.stringify({
+          messages: messageState.messages,
+          history: messageState.history,
+          timestamp: Date.now(),
+        }));
+      }
 
-  // Auto-scroll to bottom when messages change
+      // Debounce untuk menghindari terlalu banyak request ke server
+      const timeoutId = setTimeout(async () => {
+        try {
+          // Simpan ke server juga untuk persistensi
+          await fetch('/api/save-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: userId,
+              chat_id: activeChatId,
+              messages: messageState.messages,
+              history: messageState.history,
+            }),
+          });
+        } catch (err) {
+          console.error('Failed to save chat state to server:', err);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [messageState, activeChatId, isInitialized, userId]);
+
   useEffect(() => {
     if (messageListRef.current) {
       messageListRef.current.scrollTo({
         top: messageListRef.current.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }, [messageState.messages]);
@@ -227,210 +268,170 @@ export default function Home() {
   const toggleSidebar = () => {
     const newValue = !showSidebar;
     setShowSidebar(newValue);
-    localStorage.setItem('showSidebar', newValue.toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showSidebar', newValue.toString());
+    }
   };
 
   const createNewChat = useCallback(async () => {
-    if (!userId || loading) {
-      setError('User ID tidak valid atau sedang memproses. Silakan tunggu.');
-      return;
-    }
+    if (!userId || loading) return;
 
-    setLoading(true);
     const newChatId = generateSessionId();
-    const newChat = { id: newChatId, title: `Chat Baru` };
-
-    try {
-      // Optimistically update UI first
-      setChatHistory(prev => [...prev, newChat]);
-      setActiveChatId(newChatId);
+    setActiveChatId(newChatId);
+    if (typeof window !== 'undefined') {
       localStorage.setItem('activeChatId', newChatId);
-      
-      setMessageState({
-        messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
-        history: [],
-      });
-      
-      setIsNewChat(true);
-      
-      if (isMobile) setShowSidebar(false);
-
-      // Create chat in background
-      const response = await fetch('/api/create-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          chat_id: newChatId,
-          title: newChat.title,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create chat');
-      }
-
-      setTimeout(() => textAreaRef.current?.focus(), 100);
-    } catch (error) {
-      console.error('Error creating chat:', error);
-      
-      // Rollback optimistic update on error
-      setChatHistory(prev => prev.filter(chat => chat.id !== newChatId));
-      
-      setError(error instanceof Error ? error.message : 'Gagal membuat chat baru');
-    } finally {
-      setLoading(false);
     }
+    setMessageState({
+      messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
+      history: [],
+    });
+    setIsNewChat(true);
+    if (isMobile) setShowSidebar(false);
+
+    // Reset query juga
+    setQuery('');
   }, [userId, isMobile, loading]);
 
-  const switchChat = useCallback((chatId: string) => {
+  const switchChat = useCallback(async (chatId: string) => {
+    if (loading) return;
+    
     setActiveChatId(chatId);
-    localStorage.setItem('activeChatId', chatId);
-    
-    const savedState = localStorage.getItem(`chat_state_${chatId}`);
-    if (savedState) {
-      try {
-        const parsedState = JSON.parse(savedState);
-        if (parsedState.messages && parsedState.history) {
-          setMessageState(parsedState);
-          setIsNewChat(parsedState.messages.length <= 1);
-        } else {
-          setMessageState({
-            messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
-            history: [],
-          });
-          setIsNewChat(true);
-        }
-      } catch {
-        setMessageState({
-          messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
-          history: [],
-        });
-        setIsNewChat(true);
-      }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('activeChatId', chatId);
     }
-    
+
+    // Coba load dari localStorage dulu untuk response yang cepat
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem(`chat_state_${chatId}`);
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState);
+          if (parsedState.messages && parsedState.history) {
+            setMessageState(parsedState);
+            setIsNewChat(parsedState.messages.length <= 1);
+            
+            // Setelah load dari localStorage, sync dengan server di background
+            setTimeout(() => {
+              fetchSavedState(chatId, userId || '').then((serverState) => {
+                // Hanya update jika ada perbedaan dengan localStorage
+                if (serverState && JSON.stringify(serverState) !== savedState) {
+                  setMessageState(serverState);
+                }
+              });
+            }, 100);
+          } else {
+            await fetchSavedState(chatId, userId || '');
+          }
+        } catch {
+          await fetchSavedState(chatId, userId || '');
+        }
+      } else {
+        // Jika tidak ada di localStorage, langsung fetch dari server
+        await fetchSavedState(chatId, userId || '');
+      }
+    } else {
+      // Server-side rendering fallback
+      await fetchSavedState(chatId, userId || '');
+    }
+
     if (isMobile) setShowSidebar(false);
     setTimeout(() => textAreaRef.current?.focus(), 100);
-  }, [isMobile]);
+  }, [isMobile, userId, loading]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    if (typeof window !== 'undefined') {
+      localStorage.clear();
+    }
     router.push('/login');
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
     const question = query.trim();
-    
-    if (!question) {
-      setError('Masukkan pertanyaan Anda');
-      return;
-    }
-    
-    if (!userId || !activeChatId) {
-      setError('Session tidak valid');
-      return;
+    if (!question || !userId) return;
+
+    // Jika belum ada activeChatId, buat chat baru
+    let currentChatId = activeChatId;
+    if (!currentChatId) {
+      currentChatId = generateSessionId();
+      setActiveChatId(currentChatId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('activeChatId', currentChatId);
+      }
     }
 
-    setError(null);
-    const userMessage = { type: 'userMessage', message: question };
-
+    // Tambahkan pesan user ke messages
     setMessageState(prev => ({
       ...prev,
-      messages: [...prev.messages, userMessage],
+      messages: [...prev.messages, { type: 'userMessage', message: question }],
     }));
 
-    setLoading(true);
     setQuery('');
-    setIsNewChat(false);
+    setLoading(true);
+    setError(null);
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      // Jika ini chat pertama, buat judul berdasarkan pertanyaan
+      const chatTitle = isNewChat ? question.slice(0, 50) : (chatHistory.find(c => c.id === currentChatId)?.title || question.slice(0, 50));
 
-      const response = await fetch('/api/chat', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: userId,
-          chat_id: activeChatId,
-          title: chatHistory.find(c => c.id === activeChatId)?.title || 
-                 question.slice(0, 30) || 'Percakapan Baru',
+          chat_id: currentChatId,
+          title: chatTitle,
           question,
           history: messageState.history,
         }),
-        signal: controller.signal
       });
 
-      clearTimeout(timeoutId);
+      if (!res.ok) throw new Error('Failed to get response from API');
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Request failed');
-      }
+      const data = await res.json();
 
-      const data = await response.json();
-
-      // Update chat title if first real message
-      if (messageState.messages.length === 1 && 
-          messageState.messages[0].message.includes('Halo')) {
-        const newTitle = question.length > 20 ? 
-                       question.slice(0, 20) + '...' : 
-                       question;
-        
-        setChatHistory(prev => 
-          prev.map(c => c.id === activeChatId ? { ...c, title: newTitle } : c)
-        );
-      }
+      // Update messageState dengan response dari API
+      const apiMessage = data.text || 'Tidak ada jawaban dari server.';
+      const newHistory: [string, string][] = data.history || [...messageState.history, [question, apiMessage]];
 
       setMessageState(prev => ({
-        messages: [
-          ...prev.messages, 
-          { 
-            type: 'apiMessage', 
-            message: data.text, 
-            sourceDocs: data.sourceDocuments 
-          }
-        ],
-        history: [...prev.history, [question, data.text]],
+        messages: [...prev.messages, { type: 'apiMessage', message: apiMessage }],
+        history: newHistory,
       }));
 
-    } catch (err) {
-      console.error('Chat error:', err);
-      
-      let errorMessage = 'Terjadi kesalahan';
-      if (err instanceof Error) {
-        errorMessage = err.name === 'AbortError' 
-          ? 'Permintaan timeout' 
-          : err.message || 'Terjadi kesalahan';
+      // Jika ini chat baru, tambahkan ke chat history dan update title
+      if (isNewChat) {
+        const newChat = { id: currentChatId, title: chatTitle };
+        // Tambahkan chat baru di posisi teratas (terbaru)
+        setChatHistory(prev => [newChat, ...prev]);
+        setIsNewChat(false);
+      } else {
+        // Jika chat sudah ada, pindahkan ke posisi teratas sebagai yang terakhir digunakan
+        setChatHistory(prev => {
+          const existingChatIndex = prev.findIndex(chat => chat.id === currentChatId);
+          if (existingChatIndex > 0) {
+            const updatedChats = [...prev];
+            const [currentChat] = updatedChats.splice(existingChatIndex, 1);
+            return [currentChat, ...updatedChats];
+          }
+          return prev;
+        });
       }
-      
-      setError(errorMessage);
-      setQuery(question);
+
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan saat mengirim pesan.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEnter = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !loading) {
+  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !loading) {
       e.preventDefault();
       handleSubmit();
     }
   };
-
-  if (!isInitialized) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-purple-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col h-screen bg-purple-50 overflow-hidden">
@@ -438,7 +439,7 @@ export default function Home() {
       <header className="bg-purple-50 text-gray-800 py-3 px-4 md:py-4 md:px-6 flex items-center justify-between shadow-md border-b border-gray-200 z-30 flex-shrink-0">
         <div className="flex items-center">
           <button
-            onClick={toggleSidebar}
+            onClick={toggleSidebar} 
             className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors mr-3"
             aria-label="Toggle sidebar"
           >
@@ -455,7 +456,7 @@ export default function Home() {
             <h1 className="text-lg md:text-xl font-bold">CYBERFOX</h1>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2 md:space-x-3">
           <div className="hidden md:flex items-center">
             <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-medium text-sm mr-2">
@@ -499,35 +500,33 @@ export default function Home() {
                   Chat Baru
                 </button>
               </div>
-              
-              <div className="px-3 py-2 border-b border-gray-200 flex-shrink-0">
-                <h2 className="text-sm font-semibold text-gray-600">
-                  CHAT HISTORY
-                </h2>
-              </div>
-              
-              <div className="overflow-y-auto flex-1 p-2">
-                {chatHistory.length === 0 ? (
-                  <p className="p-3 text-gray-500 text-sm text-center">
-                    Belum ada riwayat chat
-                  </p>
-                ) : (
-                  chatHistory.map((chat) => (
-                    <button
-                      key={chat.id}
-                      className={`w-full text-left p-3 rounded-md mb-1 transition-colors text-sm flex items-center ${
-                        chat.id === activeChatId
-                          ? "bg-blue-100 text-blue-700 font-medium border-l-4 border-blue-600"
-                          : "hover:bg-gray-100 text-gray-700"
-                      }`}
-                      onClick={() => switchChat(chat.id)}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="truncate">{chat.title}</span>
-                    </button>
-                  ))
-                )}
-              </div>
+
+              {chatHistory.length > 0 && (
+                <>
+                  <div className="px-3 py-2 border-b border-gray-200 flex-shrink-0">
+                    <h2 className="text-sm font-semibold text-gray-600">
+                      CHAT HISTORY
+                    </h2>
+                  </div>
+
+                  <div className="overflow-y-auto flex-1 p-2">
+                    {chatHistory.map((chat) => (
+                      <button
+                        key={chat.id}
+                        className={`w-full text-left p-3 rounded-md mb-1 transition-colors text-sm flex items-center ${
+                          chat.id === activeChatId
+                            ? "bg-blue-100 text-blue-700 font-medium border-l-4 border-blue-600"
+                            : "hover:bg-gray-100 text-gray-700"
+                        }`}
+                        onClick={() => switchChat(chat.id)}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="truncate">{chat.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </aside>
           </>
         )}
@@ -539,8 +538,8 @@ export default function Home() {
             ref={messageListRef}
             className="flex-1 overflow-y-auto px-4 md:px-6 py-4"
           >
-            {isNewChat && messageState.messages.length <= 1 && 
-             messageState.messages[0]?.message.includes('Halo') ? (
+            {!activeChatId || (isNewChat && messageState.messages.length <= 1 && 
+             messageState.messages[0]?.message.includes('Halo')) ? (
               // Welcome Screen
               <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
                 <div className="relative w-24 h-24 md:w-32 md:h-32 mb-6 md:mb-8">
@@ -553,15 +552,15 @@ export default function Home() {
                   </div>
                   <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-6 h-6 md:w-8 md:h-8 bg-blue-500 rounded-full flex items-center justify-center"></div>
                 </div>
-                
+
                 <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">
                   Learn and Surf Safely with Rubi the Fox!
                 </h2>
-                
+
                 <div className="mb-4 md:mb-6 text-gray-600">
                   <p className="mb-2">🔍 Real or fake? Let's check!</p>
                 </div>
-                
+
                 <div className="space-y-2 md:space-y-3 mb-6 md:mb-8 max-w-md">
                   <div className="bg-purple-100 text-purple-800 px-3 md:px-4 py-2 rounded-full text-xs md:text-sm">
                     🔐 Passwords are secret spells—only you should know the magic!
@@ -608,7 +607,7 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Loading Indicator */}
                 {loading && (
                   <div className="flex justify-start mb-4">
@@ -668,7 +667,7 @@ export default function Home() {
                   </button>
                 )}
               </div>
-              
+
               <button
                 type="submit"
                 disabled={loading || query.trim().length === 0}
@@ -682,7 +681,7 @@ export default function Home() {
                 <Send className={`w-5 h-5 ${loading ? 'animate-pulse' : ''}`} />
               </button>
             </form>
-            
+
             {error && (
               <div className="mt-2 max-w-4xl mx-auto">
                 <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-md flex items-center justify-between">

@@ -1,19 +1,24 @@
 import { Pool } from 'pg';
 
-const pool = new Pool({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-});
+const isProduction = process.env.NODE_ENV === 'production';
 
-// Fungsi untuk connect ke database (mengembalikan pool, bisa juga client)
+const pool = isProduction
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false, // penting untuk Railway
+      },
+    })
+  : new Pool({
+      user: process.env.POSTGRES_USER,
+      host: process.env.POSTGRES_HOST,
+      database: process.env.POSTGRES_DB,
+      password: process.env.POSTGRES_PASSWORD,
+      port: parseInt(process.env.POSTGRES_PORT || '5432'),
+    });
+
 export async function connectToDatabase() {
-  // Jika ingin langsung return pool (recommended karena efisien)
   return pool;
-
- 
 }
 
 export async function query(text: string, params?: any[]) {
@@ -36,4 +41,3 @@ export async function getClient() {
 
 export { pool };
 export const executeQuery = query;
-

@@ -35,11 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const sanitizedQuestion = question.trim().replaceAll('\n', ' ');
 
   try {
+    // Setup Pinecone & embedding store
     const index = pinecone.Index(PINECONE_INDEX_NAME);
     const vectorStore = await PineconeStore.fromExistingIndex(
-      new CohereEmbeddings({
-        model: 'embed-english-v3.0',
-      }),
+      new CohereEmbeddings({ model: 'embed-english-v3.0' }),
       {
         pineconeIndex: index,
         textKey: 'text',
@@ -47,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     );
 
+    // Promise untuk menangkap dokumen hasil retrieval
     let resolveWithDocuments: (value: Document[]) => void;
     const documentPromise = new Promise<Document[]>((resolve) => {
       resolveWithDocuments = resolve;
@@ -62,34 +62,87 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ],
     });
 
+    // Buat chain untuk Q&A
     const chain = makeChain(retriever);
 
+    // Format history ke string
     const pastMessages = history
-      .map((message: [string, string]) => {
-        return [`Human: ${message[0]}`, `Assistant: ${message[1]}`].join('\n');
-      })
+      .map((message: [string, string]) => `Human: ${message[0]}\nAssistant: ${message[1]}`)
       .join('\n');
 
+    // Dapatkan jawaban dari chain
     const response = await chain.invoke({
       question: sanitizedQuestion,
       chat_history: pastMessages,
     });
 
+    // Ambil dokumen sumber dari promise
     const sourceDocuments = await documentPromise;
+
+    // --- SIMPAN TITLE CHAT HANYA JIKA CHAT BARU ---
+    const existingChatResult = await pool.query(
+      'SELECT id FROM chats WHERE chat_id = $1 AND user_id = $2',
+      [chat_id, user_id]
+    );
+
+    if (existingChatResult.rows.length === 0) {
+      await pool.query(
+        `INSERT INTO chats (user_id, chat_id, title, created_at, updated_at)
+         VALUES ($1, $2, $3, NOW(), NOW())`,
+        [user_id, chat_id, title || 'Chat Baru']
+      );
+    }
 
     // Simpan pesan user
     await pool.query(
-      `INSERT INTO messages (user_id, chat_id, title, content, role, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, 'user', NOW(), NOW())`,
-      [user_id, chat_id, title || null, sanitizedQuestion]
+      `INSERT INTO messages (user_id, chat_id, content, role, created_at, updated_at)
+       VALUES ($1, $2, $3, 'user', NOW(), NOW())`,
+      [user_id, chat_id, sanitizedQuestion]
     );
 
-    // Simpan jawaban AI
+    // Simpan pesan assistant
     await pool.query(
-      `INSERT INTO messages (user_id, chat_id, title, content, role, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, 'assistant', NOW(), NOW())`,
-      [user_id, chat_id, title || null, response]
+      `INSERT INTO messages (user_id, chat_id, content, role, created_at, updated_at)
+       VALUES ($1, $2, $3, 'assistant', NOW(), NOW())`,
+      [user_id, chat_id, response]
     );
+
+    // --- UPDATE TITLE CHAT JIKA INI PERTANYAAN PERTAMA ---
+    if (history.length === 0) {
+      await pool.query(
+        `UPDATE chats SET title = $1, updated_at = NOW() WHERE chat_id = $2 AND user_id = $3`,
+        [sanitizedQuestion.slice(0, 50), chat_id, user_id]
+      );
+    }
+
+    // Sinkronisasi chat_contents
+    const allMessagesResult = await pool.query(
+      'SELECT content, role FROM messages WHERE chat_id = $1 AND user_id = $2 ORDER BY created_at ASC',
+      [chat_id, user_id]
+    );
+
+    const messagesArray = allMessagesResult.rows.map(msg => ({
+      content: msg.content,
+      role: msg.role,
+    }));
+
+    const existingChatContents = await pool.query(
+      'SELECT id FROM chat_contents WHERE chat_id = $1 AND user_id = $2',
+      [chat_id, user_id]
+    );
+
+    if (existingChatContents.rows.length === 0) {
+      await pool.query(
+        `INSERT INTO chat_contents (user_id, chat_id, messages, created_at, updated_at)
+         VALUES ($1, $2, $3, NOW(), NOW())`,
+        [user_id, chat_id, JSON.stringify(messagesArray)]
+      );
+    } else {
+      await pool.query(
+        `UPDATE chat_contents SET messages = $1, updated_at = NOW() WHERE chat_id = $2 AND user_id = $3`,
+        [JSON.stringify(messagesArray), chat_id, user_id]
+      );
+    }
 
     return res.status(200).json({ text: response, sourceDocuments });
   } catch (error: any) {

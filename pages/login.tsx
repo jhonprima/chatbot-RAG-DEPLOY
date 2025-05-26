@@ -16,7 +16,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-  
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -25,20 +25,21 @@ export default function Login() {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        // Handle error messages from backend
         throw new Error(data.message || 'Login gagal');
       }
-  
-      // Simpan token dan redirect
+
+      // ✅ Simpan token, user object, dan user_id secara terpisah
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('user_id', data.user.id); // <== Tambahan penting
 
-      router.push('/'); // Redirect ke halaman setelah login
-      
+      // Redirect ke halaman utama
+      router.push('/');
+
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat login');
     } finally {

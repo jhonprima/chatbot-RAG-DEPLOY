@@ -26,7 +26,7 @@ export default async function handler(
   try {
     const { email, password } = req.body;
 
-    
+    // Validasi input
     if (typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ success: false, message: 'Input tidak valid' });
     }
@@ -39,7 +39,7 @@ export default async function handler(
       return res.status(400).json({ success: false, message: 'Format email tidak valid' });
     }
 
-    
+    // Cari pengguna
     const userResult = await query(
       'SELECT id, email, password, name FROM users WHERE email = $1',
       [email.toLowerCase().trim()] // Normalisasi email
@@ -52,7 +52,7 @@ export default async function handler(
       return res.status(401).json({ success: false, message: 'Email atau password salah' });
     }
 
-    
+    // Verifikasi password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
     if (!isPasswordValid) {
@@ -60,7 +60,7 @@ export default async function handler(
       return res.status(401).json({ success: false, message: 'Email atau password salah' });
     }
 
-    
+    // Pastikan JWT_SECRET ada
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET tidak terdefinisi');
     }
