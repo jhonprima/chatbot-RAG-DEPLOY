@@ -402,7 +402,8 @@ export default function Home() {
 
       // Jika ini chat baru, tambahkan ke chat history dan update title
       if (isNewChat) {
-        const newChat = { id: currentChatId, title: chatTitle };
+        const newChat: Chat = { id: currentChatId, title: chatTitle };
+
         // Tambahkan chat baru di posisi teratas (terbaru)
         setChatHistory(prev => [newChat, ...prev]);
         setIsNewChat(false);

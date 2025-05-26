@@ -4,10 +4,11 @@
     justify-content: center;
     min-height: 100vh;
     padding: 2rem;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: F7F7FF;
   }
   
   .formWrapper {
+    border-color: blueviolet;
     width: 100%;
     max-width: 450px;
     background-color: white;
@@ -94,7 +95,7 @@
   }
   
   .button {
-    background-color: #3b82f6;
+    background-color: #4B26C6;
     color: white;
     border: none;
     border-radius: 8px;
@@ -138,7 +139,7 @@
     padding: 0.75rem 1rem;
     border-radius: 6px;
     margin-bottom: 1.5rem;
-    font-size: 0.9rem;
+    font-size: 0.9rem;  
     display: flex;
     align-items: center;
     justify-content: center;

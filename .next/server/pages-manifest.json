@@ -2,7 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
-  "/api/user-chats": "pages/api/user-chats.js",
-  "/api/chat-contents": "pages/api/chat-contents.js"
+  "/login": "pages/login.js",
+  "/register": "pages/register.js",
+  "/": "pages/index.js"
 }
