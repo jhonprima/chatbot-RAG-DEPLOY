@@ -42,19 +42,19 @@ export default function Home() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isNewChat, setIsNewChat] = useState(true);
 
-  const [messageState, setMessageState] = useState<ChatState>({
+  const defaultInitialState: ChatState = {
     messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
     history: [],
-  });
+  };
 
+  const [messageState, setMessageState] = useState<ChatState>(defaultInitialState);
   const [chatHistory, setChatHistory] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string>('');
 
   const messageListRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLInputElement>(null);
 
-  const generateSessionId = () =>
-    `session_${Date.now()}_${uuidv4().substring(0, 8)}`;
+  const generateSessionId = () => `session_${Date.now()}_${uuidv4().substring(0, 8)}`;
 
   const fetchSavedState = async (chatId: string, userId: string) => {
     try {
@@ -63,27 +63,16 @@ export default function Home() {
       const data = await res.json();
 
       if (data.messages && data.history) {
-        const newState = {
+        const newState: ChatState = {
           messages: data.messages,
           history: data.history,
         };
         setMessageState(newState);
-        
-        // Simpan ke localStorage untuk persist state
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(`chat_state_${chatId}`, JSON.stringify({
-            messages: data.messages,
-            history: data.history,
-            timestamp: Date.now(),
-          }));
-        }
-        
-        // Set isNewChat berdasarkan jumlah pesan
+        localStorage.setItem(`chat_state_${chatId}`, JSON.stringify({ ...newState, timestamp: Date.now() }));
         setIsNewChat(data.messages.length <= 1);
-        
         return newState;
       } else {
-        const defaultState = {
+        const defaultState: ChatState = {
           messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
           history: [],
         };
@@ -93,7 +82,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Failed to fetch chat content:', err);
-      const defaultState = {
+      const defaultState: ChatState = {
         messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
         history: [],
       };
@@ -109,13 +98,11 @@ export default function Home() {
       if (!res.ok) throw new Error('Failed to fetch user chats');
       const response = await res.json();
       const data: Chat[] = response.data || [];
-      // Urutkan berdasarkan waktu terbaru (asumsi ada created_at atau timestamp)
-      // Jika tidak ada, urutkan berdasarkan ID yang mengandung timestamp
+
       const sortedData = data.sort((a, b) => {
-        // Extract timestamp dari session ID
         const timestampA = parseInt(a.id.split('_')[1]) || 0;
         const timestampB = parseInt(b.id.split('_')[1]) || 0;
-        return timestampB - timestampA; // Terbaru di atas
+        return timestampB - timestampA;
       });
       setChatHistory(Array.isArray(sortedData) ? sortedData : []);
       return sortedData;
@@ -143,7 +130,7 @@ export default function Home() {
     const initializeApp = async () => {
       try {
         if (typeof window === 'undefined') return;
-        
+
         const storedUser = localStorage.getItem('user');
         if (!storedUser) {
           router.push('/login');
@@ -157,18 +144,12 @@ export default function Home() {
         setUsername(userData.name);
         setUserId(userData.id);
 
-        // Fetch existing chats
         const existingChats = await fetchUserChats(userData.id);
 
-        // Cek apakah ada active chat dari localStorage
         let activeId = localStorage.getItem('activeChatId');
-        
-        // Validasi apakah activeId masih ada di chat history
+
         if (activeId && existingChats.some(chat => chat.id === activeId)) {
-          // Chat masih ada, load state-nya
           setActiveChatId(activeId);
-          
-          // Coba load dari localStorage dulu
           const savedState = localStorage.getItem(`chat_state_${activeId}`);
           if (savedState) {
             try {
@@ -178,25 +159,15 @@ export default function Home() {
                 setIsNewChat(parsedState.messages.length <= 1);
               }
             } catch {
-              // Jika localStorage rusak, fetch dari server
               await fetchSavedState(activeId, userData.id);
             }
           } else {
-            // Jika tidak ada di localStorage, fetch dari server
             await fetchSavedState(activeId, userData.id);
           }
-          
-
         } else {
-          // Tidak ada active chat atau chat sudah tidak ada, reset ke default
           setActiveChatId('');
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('activeChatId');
-          }
-          setMessageState({
-            messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
-            history: [],
-          });
+          localStorage.removeItem('activeChatId');
+          setMessageState(defaultInitialState);
           setIsNewChat(true);
         }
 
@@ -205,9 +176,7 @@ export default function Home() {
         setIsInitialized(true);
       } catch (err) {
         console.error('Initialization error:', err);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('user');
-        }
+        localStorage.removeItem('user');
         if (isMounted) router.push('/login');
       }
     };
@@ -221,7 +190,8 @@ export default function Home() {
     };
   }, [router, isInitialized, isMobile]);
 
-  // Simpan state ke localStorage dan server setiap kali messageState berubah
+
+  // Auto-save chat state ke localStorage dan server setiap ada perubahan
   useEffect(() => {
     if (isInitialized && activeChatId && messageState.messages.length > 1) {
       // Simpan ke localStorage untuk akses cepat
@@ -233,10 +203,9 @@ export default function Home() {
         }));
       }
 
-      // Debounce untuk menghindari terlalu banyak request ke server
+      // Debounced save ke server
       const timeoutId = setTimeout(async () => {
         try {
-          // Simpan ke server juga untuk persistensi
           await fetch('/api/save-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -256,6 +225,7 @@ export default function Home() {
     }
   }, [messageState, activeChatId, isInitialized, userId]);
 
+  // Auto-scroll ke bottom saat ada pesan baru
   useEffect(() => {
     if (messageListRef.current) {
       messageListRef.current.scrollTo({
@@ -265,6 +235,7 @@ export default function Home() {
     }
   }, [messageState.messages]);
 
+  // Toggle sidebar visibility dan simpan preference
   const toggleSidebar = () => {
     const newValue = !showSidebar;
     setShowSidebar(newValue);
@@ -273,6 +244,7 @@ export default function Home() {
     }
   };
 
+  // Buat chat baru dan reset state
   const createNewChat = useCallback(async () => {
     if (!userId || loading) return;
 
@@ -287,11 +259,10 @@ export default function Home() {
     });
     setIsNewChat(true);
     if (isMobile) setShowSidebar(false);
-
-    // Reset query juga
     setQuery('');
   }, [userId, isMobile, loading]);
 
+  // Switch ke chat yang dipilih dan load state-nya
   const switchChat = useCallback(async (chatId: string) => {
     if (loading) return;
     
@@ -300,7 +271,7 @@ export default function Home() {
       localStorage.setItem('activeChatId', chatId);
     }
 
-    // Coba load dari localStorage dulu untuk response yang cepat
+    // Load dari localStorage dulu untuk response cepat
     if (typeof window !== 'undefined') {
       const savedState = localStorage.getItem(`chat_state_${chatId}`);
       if (savedState) {
@@ -310,10 +281,9 @@ export default function Home() {
             setMessageState(parsedState);
             setIsNewChat(parsedState.messages.length <= 1);
             
-            // Setelah load dari localStorage, sync dengan server di background
+            // Sync dengan server di background
             setTimeout(() => {
               fetchSavedState(chatId, userId || '').then((serverState) => {
-                // Hanya update jika ada perbedaan dengan localStorage
                 if (serverState && JSON.stringify(serverState) !== savedState) {
                   setMessageState(serverState);
                 }
@@ -326,11 +296,9 @@ export default function Home() {
           await fetchSavedState(chatId, userId || '');
         }
       } else {
-        // Jika tidak ada di localStorage, langsung fetch dari server
         await fetchSavedState(chatId, userId || '');
       }
     } else {
-      // Server-side rendering fallback
       await fetchSavedState(chatId, userId || '');
     }
 
@@ -338,6 +306,7 @@ export default function Home() {
     setTimeout(() => textAreaRef.current?.focus(), 100);
   }, [isMobile, userId, loading]);
 
+  // Clear localStorage dan redirect ke login
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.clear();
@@ -345,13 +314,14 @@ export default function Home() {
     router.push('/login');
   };
 
+  // Submit pesan user dan proses response dari API
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     const question = query.trim();
     if (!question || !userId) return;
 
-    // Jika belum ada activeChatId, buat chat baru
+    // Buat chat baru jika belum ada activeChatId
     let currentChatId = activeChatId;
     if (!currentChatId) {
       currentChatId = generateSessionId();
@@ -361,7 +331,7 @@ export default function Home() {
       }
     }
 
-    // Tambahkan pesan user ke messages
+    // Tambahkan pesan user ke chat
     setMessageState(prev => ({
       ...prev,
       messages: [...prev.messages, { type: 'userMessage', message: question }],
@@ -372,7 +342,6 @@ export default function Home() {
     setError(null);
 
     try {
-      // Jika ini chat pertama, buat judul berdasarkan pertanyaan
       const chatTitle = isNewChat ? question.slice(0, 50) : (chatHistory.find(c => c.id === currentChatId)?.title || question.slice(0, 50));
 
       const res = await fetch('/api/chat', {
@@ -391,7 +360,7 @@ export default function Home() {
 
       const data = await res.json();
 
-      // Update messageState dengan response dari API
+      // Update dengan response dari API
       const apiMessage = data.text || 'Tidak ada jawaban dari server.';
       const newHistory: [string, string][] = data.history || [...messageState.history, [question, apiMessage]];
 
@@ -400,15 +369,13 @@ export default function Home() {
         history: newHistory,
       }));
 
-      // Jika ini chat baru, tambahkan ke chat history dan update title
+      // Update chat history
       if (isNewChat) {
         const newChat: Chat = { id: currentChatId, title: chatTitle };
-
-        // Tambahkan chat baru di posisi teratas (terbaru)
         setChatHistory(prev => [newChat, ...prev]);
         setIsNewChat(false);
       } else {
-        // Jika chat sudah ada, pindahkan ke posisi teratas sebagai yang terakhir digunakan
+        // Pindahkan chat aktif ke posisi teratas
         setChatHistory(prev => {
           const existingChatIndex = prev.findIndex(chat => chat.id === currentChatId);
           if (existingChatIndex > 0) {
@@ -427,6 +394,7 @@ export default function Home() {
     }
   };
 
+  // Handle Enter key untuk submit
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !loading) {
       e.preventDefault();
