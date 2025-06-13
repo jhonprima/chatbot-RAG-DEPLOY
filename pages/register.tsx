@@ -57,7 +57,7 @@ export default function Register() {
   return (
     <>
       <Head>
-        <title>Registrasi | CyberFox User</title>
+        <title>Registrasi | CyberRubi User</title>
         <meta name="description" content="Buat akun baru untuk aplikasi kami" />
       </Head>
 

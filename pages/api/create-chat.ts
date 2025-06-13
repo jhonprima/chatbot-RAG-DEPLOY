@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const existingChat = await pool.query('SELECT id FROM chats WHERE id = $1', [chat_id]);
 
-    if (existingChat.rows.length > 0) {
+    if (existingChat.rows.length > 0)   {
       return res.status(409).json({ error: 'Chat with this ID already exists' });
     }
 

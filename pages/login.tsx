@@ -64,7 +64,7 @@ export default function Login() {
               height={50} 
               className={styles.logo}
             />
-            <h1 className={styles.title}>CYBERFOX, YOUR SAFETY</h1>
+            <h1 className={styles.title}>CyberRubi, YOUR SAFETY</h1>
             <p className={styles.subtitle}>Masuk untuk melanjutkan ke akun Anda</p>
           </div>
 

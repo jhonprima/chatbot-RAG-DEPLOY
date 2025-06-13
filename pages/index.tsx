@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { Document } from 'langchain/document';
-import { Menu, LogOut, Plus, MessageCircle, Send, X } from 'lucide-react';
+import { Menu, LogOut, Plus, MessageCircle, Send, X, ChevronRight } from 'lucide-react';
 
 interface UserData {
   id: string;
@@ -27,6 +27,54 @@ interface ChatState {
   messages: ChatMessage[];
   history: [string, string][];
 }
+
+// Component untuk menampilkan source documents
+const SourceDocuments = ({ sourceDocs }: { sourceDocs: Document[] }) => {
+  const [showSources, setShowSources] = useState(false);
+
+  if (!sourceDocs || sourceDocs.length === 0) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+      <button
+        onClick={() => setShowSources(!showSources)}
+        className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+      >
+        <ChevronRight 
+          className={`w-4 h-4 transition-transform ${showSources ? 'rotate-90' : ''}`}
+        />
+        Sumber Referensi ({sourceDocs.length})
+      </button>
+      
+      {showSources && (
+        <div className="mt-2 space-y-2">
+          {sourceDocs.map((doc, index) => (
+            <div key={index} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg text-sm">
+              <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Sumber {index + 1}
+              </div>
+              <div className="text-gray-600 dark:text-gray-400 text-xs mb-2 flex gap-2 flex-wrap">
+                {doc.metadata?.source && (
+                  <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                    {doc.metadata.source}
+                  </span>
+                )}
+                {doc.metadata?.page && (
+                  <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
+                    Halaman {doc.metadata.page}
+                  </span>
+                )}
+              </div>
+              <div className="text-gray-700 dark:text-gray-300 line-clamp-3">
+                {doc.pageContent}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function Home() {
   const router = useRouter();
@@ -63,13 +111,19 @@ export default function Home() {
       const data = await res.json();
 
       if (data.messages && data.history) {
+        // Pastikan sourceDocs di-preserve jika ada
+        const messagesWithSources = data.messages.map((msg: any) => ({
+          ...msg,
+          sourceDocs: msg.sourceDocs || []
+        }));
+
         const newState: ChatState = {
-          messages: data.messages,
+          messages: messagesWithSources,
           history: data.history,
         };
         setMessageState(newState);
         localStorage.setItem(`chat_state_${chatId}`, JSON.stringify({ ...newState, timestamp: Date.now() }));
-        setIsNewChat(data.messages.length <= 1);
+        setIsNewChat(messagesWithSources.length <= 1);
         return newState;
       } else {
         const defaultState: ChatState = {
@@ -112,6 +166,7 @@ export default function Home() {
       return [];
     }
   };
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -362,10 +417,15 @@ export default function Home() {
 
       // Update dengan response dari API
       const apiMessage = data.text || 'Tidak ada jawaban dari server.';
+      const sourceDocuments = data.sourceDocuments || []; // Ambil sourceDocuments dari response
       const newHistory: [string, string][] = data.history || [...messageState.history, [question, apiMessage]];
 
       setMessageState(prev => ({
-        messages: [...prev.messages, { type: 'apiMessage', message: apiMessage }],
+        messages: [...prev.messages, { 
+          type: 'apiMessage', 
+          message: apiMessage,
+          sourceDocs: sourceDocuments // Simpan sourceDocuments
+        }],
         history: newHistory,
       }));
 
@@ -402,6 +462,17 @@ export default function Home() {
     }
   };
 
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat aplikasi...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen bg-purple-50 overflow-hidden">
       {/* Header - Fixed */}
@@ -422,7 +493,7 @@ export default function Home() {
                 className="object-cover w-full h-full"
               />
             </div>
-            <h1 className="text-lg md:text-xl font-bold">CYBERFOX</h1>
+            <h1 className="text-lg md:text-xl font-bold">CyberRubi</h1>
           </div>
         </div>
 
@@ -523,7 +594,7 @@ export default function Home() {
                 </div>
 
                 <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">
-                  Learn and Surf Safely with Rubi the Fox!
+                  Learn and Surf Safely with CyberRubi!
                 </h2>
 
                 <div className="mb-4 md:mb-6 text-gray-600">

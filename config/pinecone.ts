@@ -9,6 +9,6 @@ if (!process.env.PINECONE_INDEX_NAME) {
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME ?? '';
 const COHERE_API_KEY = process.env.COHERE_API_KEY ?? '';
 
-const PINECONE_NAME_SPACE = 'chatbot'; //namespace is optional for your vectors
+const PINECONE_NAME_SPACE = 'chatbot'; 
 
 export { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE, COHERE_API_KEY };

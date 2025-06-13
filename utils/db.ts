@@ -6,7 +6,7 @@ const pool = isProduction
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: {
-        rejectUnauthorized: false, // penting untuk Railway
+        rejectUnauthorized: false, 
       },
     })
   : new Pool({

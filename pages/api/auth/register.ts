@@ -66,7 +66,7 @@ export default async function handler(
     if (existingUser.rows.length > 0) {
       return res.status(409).json({ success: false, message: 'Email sudah terdaftar' });
     }
-
+    
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

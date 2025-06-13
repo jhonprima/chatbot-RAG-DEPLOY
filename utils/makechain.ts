@@ -39,24 +39,23 @@ export const makeChain = (retriever: VectorStoreRetriever) => {
   const condenseQuestionPrompt =
     ChatPromptTemplate.fromTemplate(CONDENSE_TEMPLATE);
   const answerPrompt = ChatPromptTemplate.fromTemplate(QA_TEMPLATE);
+  
 
   const model = new ChatCohere({
       apiKey: process.env.COHERE_API_KEY,
   });
 
-  // Rephrase the initial question into a dereferenced standalone question based on
-  // the chat history to allow effective vectorstore querying.
+
   const standaloneQuestionChain = RunnableSequence.from([
     condenseQuestionPrompt,
     model,
     new StringOutputParser(),
   ]);
 
-  // Retrieve documents based on a query, then format them.
+
   const retrievalChain = retriever.pipe(combineDocumentsFn);
 
-  // Generate an answer to the standalone question based on the chat history
-  // and retrieved documents. Additionally, we return the source documents directly.
+ 
   const answerChain = RunnableSequence.from([
     {
       context: RunnableSequence.from([
@@ -71,8 +70,7 @@ export const makeChain = (retriever: VectorStoreRetriever) => {
     new StringOutputParser(),
   ]);
 
-  // First generate a standalone question, then answer it based on
-  // chat history and retrieved context documents.
+
   const conversationalRetrievalQAChain = RunnableSequence.from([
     {
       question: standaloneQuestionChain,
