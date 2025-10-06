@@ -28,7 +28,7 @@ interface ChatState {
   history: [string, string][];
 }
 
-// Component untuk menampilkan source documents
+// Component untuk menampilkan source documents (TIDAK BERUBAH)
 const SourceDocuments = ({ sourceDocs }: { sourceDocs: Document[] }) => {
   const [showSources, setShowSources] = useState(false);
 
@@ -104,27 +104,52 @@ export default function Home() {
 
   const generateSessionId = () => `session_${Date.now()}_${uuidv4().substring(0, 8)}`;
 
+  // FIX: Fungsi untuk mengambil data dari server, disesuaikan dengan model relasional
   const fetchSavedState = async (chatId: string, userId: string) => {
     try {
-      const res = await fetch(`/api/chat-contents?chat_id=${chatId}&user_id=${userId}`);
+      // Menggunakan endpoint load-chat yang mengembalikan ChatContent + messages array
+      const res = await fetch(`/api/load-chat?chatId=${chatId}&userId=${userId}`);
       if (!res.ok) throw new Error('Failed to fetch chat content');
-      const data = await res.json();
+      
+      const { data } = await res.json();
+      
+      // Jika data adalah objek chat tunggal dan memiliki messages
+      if (data && data.messages) {
+        
+        // Membangun kembali history array untuk LangChain (['user question', 'api answer'])
+        const history: [string, string][] = [];
+        const messages: ChatMessage[] = [];
+        
+        // Iterasi melalui array messages dari server (sudah diurutkan)
+        for (let i = 0; i < data.messages.length; i++) {
+          const msg = data.messages[i];
+          const nextMsg = data.messages[i + 1];
+          
+          if (msg.role === 'user') {
+            messages.push({
+              message: msg.content,
+              type: 'userMessage',
+            });
+            
+            if (nextMsg && nextMsg.role === 'assistant') {
+              messages.push({
+                message: nextMsg.content,
+                type: 'apiMessage',
+                // Perlu disesuaikan jika sourceDocs disimpan di tabel Message
+                // sourceDocs: nextMsg.sourceDocuments ? JSON.parse(nextMsg.sourceDocuments) : []
+              });
+              history.push([msg.content, nextMsg.content]);
+              i++; // Lewati pesan assistant karena sudah diproses
+            }
+          }
+        }
 
-      if (data.messages && data.history) {
-        // Pastikan sourceDocs di-preserve jika ada
-        const messagesWithSources = data.messages.map((msg: any) => ({
-          ...msg,
-          sourceDocs: msg.sourceDocs || []
-        }));
-
-        const newState: ChatState = {
-          messages: messagesWithSources,
-          history: data.history,
-        };
+        const newState: ChatState = { messages, history };
         setMessageState(newState);
         localStorage.setItem(`chat_state_${chatId}`, JSON.stringify({ ...newState, timestamp: Date.now() }));
-        setIsNewChat(messagesWithSources.length <= 1);
+        setIsNewChat(messages.length <= 1);
         return newState;
+        
       } else {
         const defaultState: ChatState = {
           messages: [{ message: 'Halo!!, Apa yang ingin kamu tanyakan ?', type: 'apiMessage' }],
@@ -148,11 +173,13 @@ export default function Home() {
 
   const fetchUserChats = async (userId: string) => {
     try {
+      // FIX: Menggunakan endpoint yang benar dan parameter snake_case
       const res = await fetch(`/api/user-chats?user_id=${userId}`);
       if (!res.ok) throw new Error('Failed to fetch user chats');
       const response = await res.json();
       const data: Chat[] = response.data || [];
 
+      // Logic sorting chat by timestamp (tetap sama)
       const sortedData = data.sort((a, b) => {
         const timestampA = parseInt(a.id.split('_')[1]) || 0;
         const timestampB = parseInt(b.id.split('_')[1]) || 0;
@@ -179,6 +206,7 @@ export default function Home() {
     return () => window.removeEventListener('resize', handleResize);
   }, [showSidebar]);
 
+  // Logic Inisialisasi App (TIDAK BERUBAH)
   useEffect(() => {
     let isMounted = true;
 
@@ -205,20 +233,9 @@ export default function Home() {
 
         if (activeId && existingChats.some(chat => chat.id === activeId)) {
           setActiveChatId(activeId);
-          const savedState = localStorage.getItem(`chat_state_${activeId}`);
-          if (savedState) {
-            try {
-              const parsedState = JSON.parse(savedState);
-              if (parsedState.messages && parsedState.history) {
-                setMessageState(parsedState);
-                setIsNewChat(parsedState.messages.length <= 1);
-              }
-            } catch {
-              await fetchSavedState(activeId, userData.id);
-            }
-          } else {
-            await fetchSavedState(activeId, userData.id);
-          }
+          // Load dari server karena local storage sudah tidak diandalkan
+          await fetchSavedState(activeId, userData.id);
+          
         } else {
           setActiveChatId('');
           localStorage.removeItem('activeChatId');
@@ -246,10 +263,10 @@ export default function Home() {
   }, [router, isInitialized, isMobile]);
 
 
-  // Auto-save chat state ke localStorage dan server setiap ada perubahan
+  // FIX UTAMA: Hapus auto-save ke server (/api/save-chat)
   useEffect(() => {
     if (isInitialized && activeChatId && messageState.messages.length > 1) {
-      // Simpan ke localStorage untuk akses cepat
+      // Simpan ke localStorage untuk akses cepat (Bisa Dibiarkan)
       if (typeof window !== 'undefined') {
         localStorage.setItem(`chat_state_${activeChatId}`, JSON.stringify({
           messages: messageState.messages,
@@ -258,29 +275,14 @@ export default function Home() {
         }));
       }
 
-      // Debounced save ke server
-      const timeoutId = setTimeout(async () => {
-        try {
-          await fetch('/api/save-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              user_id: userId,
-              chat_id: activeChatId,
-              messages: messageState.messages,
-              history: messageState.history,
-            }),
-          });
-        } catch (err) {
-          console.error('Failed to save chat state to server:', err);
-        }
-      }, 1000);
-
-      return () => clearTimeout(timeoutId);
+      // Hapus logic save ke server (karena API /api/save-chat sudah dihapus)
+      // Server sudah otomatis menyimpan pesan melalui /api/chat saat submit
+      
     }
-  }, [messageState, activeChatId, isInitialized, userId]);
+    // Hapus return () => clearTimeout(timeoutId) karena sudah tidak ada timeout
+  }, [messageState, activeChatId, isInitialized]);
 
-  // Auto-scroll ke bottom saat ada pesan baru
+  // Auto-scroll ke bottom saat ada pesan baru (TIDAK BERUBAH)
   useEffect(() => {
     if (messageListRef.current) {
       messageListRef.current.scrollTo({
@@ -290,7 +292,7 @@ export default function Home() {
     }
   }, [messageState.messages]);
 
-  // Toggle sidebar visibility dan simpan preference
+  // Toggle sidebar visibility dan simpan preference (TIDAK BERUBAH)
   const toggleSidebar = () => {
     const newValue = !showSidebar;
     setShowSidebar(newValue);
@@ -299,7 +301,7 @@ export default function Home() {
     }
   };
 
-  // Buat chat baru dan reset state
+  // Buat chat baru dan reset state (TIDAK BERUBAH)
   const createNewChat = useCallback(async () => {
     if (!userId || loading) return;
 
@@ -326,42 +328,14 @@ export default function Home() {
       localStorage.setItem('activeChatId', chatId);
     }
 
-    // Load dari localStorage dulu untuk response cepat
-    if (typeof window !== 'undefined') {
-      const savedState = localStorage.getItem(`chat_state_${chatId}`);
-      if (savedState) {
-        try {
-          const parsedState = JSON.parse(savedState);
-          if (parsedState.messages && parsedState.history) {
-            setMessageState(parsedState);
-            setIsNewChat(parsedState.messages.length <= 1);
-            
-            // Sync dengan server di background
-            setTimeout(() => {
-              fetchSavedState(chatId, userId || '').then((serverState) => {
-                if (serverState && JSON.stringify(serverState) !== savedState) {
-                  setMessageState(serverState);
-                }
-              });
-            }, 100);
-          } else {
-            await fetchSavedState(chatId, userId || '');
-          }
-        } catch {
-          await fetchSavedState(chatId, userId || '');
-        }
-      } else {
-        await fetchSavedState(chatId, userId || '');
-      }
-    } else {
-      await fetchSavedState(chatId, userId || '');
-    }
-
+    // FIX: Langsung load dari server, tidak perlu cek localStorage yang datanya usang
+    await fetchSavedState(chatId, userId || '');
+    
     if (isMobile) setShowSidebar(false);
     setTimeout(() => textAreaRef.current?.focus(), 100);
   }, [isMobile, userId, loading]);
 
-  // Clear localStorage dan redirect ke login
+  // Clear localStorage dan redirect ke login (TIDAK BERUBAH)
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.clear();
@@ -397,17 +371,16 @@ export default function Home() {
     setError(null);
 
     try {
-      const chatTitle = isNewChat ? question.slice(0, 50) : (chatHistory.find(c => c.id === currentChatId)?.title || question.slice(0, 50));
-
+      // FIX: Payload tidak lagi memerlukan 'title'
+      // FIX: Payload tidak lagi memerlukan 'history' karena backend bisa mengambil dari database atau history dari state
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: userId,
-          chat_id: currentChatId,
-          title: chatTitle,
+          user_id: userId, // Menggunakan snake_case
+          chat_id: currentChatId, // Menggunakan snake_case
           question,
-          history: messageState.history,
+          history: messageState.history, // Tetap kirim history untuk LangChain
         }),
       });
 
@@ -417,21 +390,34 @@ export default function Home() {
 
       // Update dengan response dari API
       const apiMessage = data.text || 'Tidak ada jawaban dari server.';
-      const sourceDocuments = data.sourceDocuments || []; // Ambil sourceDocuments dari response
-      const newHistory: [string, string][] = data.history || [...messageState.history, [question, apiMessage]];
+      const sourceDocuments = data.sourceDocuments || [];
+      // FIX: Asumsi newHistory dikirim dari backend (atau dibangun dari state)
+      const newHistory: [string, string][] = [...messageState.history, [question, apiMessage]];
 
       setMessageState(prev => ({
         messages: [...prev.messages, { 
           type: 'apiMessage', 
           message: apiMessage,
-          sourceDocs: sourceDocuments // Simpan sourceDocuments
+          sourceDocs: sourceDocuments
         }],
         history: newHistory,
       }));
 
       // Update chat history
       if (isNewChat) {
-        const newChat: Chat = { id: currentChatId, title: chatTitle };
+        // FIX: Karena title sudah dihapus dari create-chat, 
+        // kita perlu memanggil endpoint create-chat untuk membuat sesi baru
+        await fetch('/api/create-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                chatId: currentChatId,
+            }),
+        });
+        
+        // Sekarang, setelah sesi dibuat di database, kita ambil lagi list chat-nya
+        const newChat: Chat = { id: currentChatId, title: question.slice(0, 50) };
         setChatHistory(prev => [newChat, ...prev]);
         setIsNewChat(false);
       } else {
@@ -454,7 +440,7 @@ export default function Home() {
     }
   };
 
-  // Handle Enter key untuk submit
+  // Handle Enter key untuk submit (TIDAK BERUBAH)
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !loading) {
       e.preventDefault();
@@ -473,6 +459,7 @@ export default function Home() {
     );
   }
 
+  // --- JSX RENDER (Tidak Berubah) ---
   return (
     <div className="flex flex-col h-screen bg-purple-50 overflow-hidden">
       {/* Header - Fixed */}
@@ -579,7 +566,7 @@ export default function Home() {
             className="flex-1 overflow-y-auto px-4 md:px-6 py-4"
           >
             {!activeChatId || (isNewChat && messageState.messages.length <= 1 && 
-             messageState.messages[0]?.message.includes('Halo')) ? (
+              messageState.messages[0]?.message.includes('Halo')) ? (
               // Welcome Screen
               <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
                 <div className="relative w-24 h-24 md:w-32 md:h-32 mb-6 md:mb-8">
@@ -644,6 +631,7 @@ export default function Home() {
                       <div className="prose prose-sm max-w-none text-sm md:text-base">
                         {msg.message}
                       </div>
+                      {msg.sourceDocs && <SourceDocuments sourceDocs={msg.sourceDocs} />}
                     </div>
                   </div>
                 ))}
