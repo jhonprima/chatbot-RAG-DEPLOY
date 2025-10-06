@@ -3,6 +3,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence, RunnableLambda } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import type { Document } from "langchain/document";
+// FIX: Mengubah lokasi import dari '@langchain/core/retriever' menjadi '@langchain/core/retrievers'
 import type { BaseRetriever } from "@langchain/core/retrievers";
 
 const CONDENSE_TEMPLATE = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
@@ -38,8 +39,11 @@ export const makeChain = (retriever: BaseRetriever) => {
   const condenseQuestionPrompt = ChatPromptTemplate.fromTemplate(CONDENSE_TEMPLATE);
   const answerPrompt = ChatPromptTemplate.fromTemplate(QA_TEMPLATE);
 
+  // FIX UTAMA: Menentukan model yang masih aktif (command-r)
   const model = new ChatCohere({
     apiKey: process.env.COHERE_API_KEY,
+    model: "command-r", // Mengganti command-r-plus atau default yang usang
+    temperature: 0, // Suhu rendah untuk jawaban yang lebih faktual (direkomendasikan untuk RAG)
   });
 
   const standaloneQuestionChain = RunnableSequence.from([
