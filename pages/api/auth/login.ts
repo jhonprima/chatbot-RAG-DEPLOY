@@ -2,10 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-// GANTI: Hapus impor 'query' dan ganti dengan PrismaClient
 import { PrismaClient } from '@prisma/client';
 
-// Inisialisasi Prisma Client
 const prisma = new PrismaClient();
 
 type ResponseData = {
@@ -13,7 +11,6 @@ type ResponseData = {
   message?: string;
   token?: string;
   user?: {
-    // FIX: Tipe id diubah menjadi string karena kita menggunakan UUID
     id: string;
     email: string;
     name?: string | null;
@@ -32,7 +29,6 @@ export default async function handler(
   try {
     const { email, password } = req.body;
 
-    // --- Validasi input (TIDAK PERLU DIUBAH, sudah bagus) ---
     if (typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ success: false, message: 'Input tidak valid' });
     }
@@ -45,22 +41,17 @@ export default async function handler(
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // GANTI: Cari pengguna dengan Prisma, bukan SQL manual
     const user = await prisma.user.findUnique({
       where: {
         email: normalizedEmail,
       },
     });
 
-    // Jika user tidak ditemukan, langsung kirim error.
-    // Kita tidak perlu menunggu bcrypt.compare, jadi sedikit lebih cepat.
     if (!user) {
       console.log(`Login attempt failed - user not found: ${normalizedEmail}`);
-      // Gunakan pesan yang sama untuk tidak memberi info ke peretas
       return res.status(401).json({ success: false, message: 'Email atau password salah' });
     }
 
-    // Verifikasi password (TIDAK PERLU DIUBAH)
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
     if (!isPasswordValid) {
@@ -68,12 +59,33 @@ export default async function handler(
       return res.status(401).json({ success: false, message: 'Email atau password salah' });
     }
 
-    // Pastikan JWT_SECRET ada (TIDAK PERLU DIUBAH)
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET tidak terdefinisi');
     }
 
-    // Buat token (TIDAK PERLU DIUBAH)
+    // --- KESALAHAN ADA DI BAGIAN INI ---
+    // Kode di bawah ini adalah versi yang sudah diperbaiki
     const token = jwt.sign(
-      { userId: user.id }, // ID adalah string (UUID)
+      { userId: user.id },
       process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    // --- -------------------------- ---
+
+    const { password: _, ...userData } = user;
+
+    console.log(`User logged in: ${user.id}`);
+    return res.status(200).json({
+      success: true,
+      token,
+      user: userData,
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Terjadi kesalahan server' 
+    });
+  }
+}
