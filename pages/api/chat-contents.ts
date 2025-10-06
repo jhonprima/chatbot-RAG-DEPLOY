@@ -1,11 +1,10 @@
+// pages/api/chat-contents.ts
 import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-// Inisialisasi Prisma Client
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Mengambil user_id dari req.query dan memastikannya string
   const userId = req.query.user_id as string;
 
   if (!userId) {
@@ -14,34 +13,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     if (req.method === 'GET') {
-      // Mengambil semua sesi chat milik user_id tertentu
       const chatContents = await prisma.chatContent.findMany({
         where: {
-          userId: userId, // Filter berdasarkan user_id
+          // FIX: Mengubah 'userId' menjadi 'user_id' agar sesuai dengan schema.prisma
+          user_id: userId, 
         },
-        // 'include' untuk mengambil data dari tabel lain yang berelasi
         include: {
-          // Ambil 1 pesan pertama untuk dijadikan judul
           messages: {
-            orderBy: {
-              createdAt: 'asc',
-            },
+            orderBy: { createdAt: 'asc' },
             take: 1,
           },
-          // Hitung jumlah pesan di setiap sesi chat secara efisien
           _count: {
             select: { messages: true },
           },
         },
-        orderBy: {
-          updatedAt: 'desc', // Urutkan dari yang terbaru
-        },
+        orderBy: { updatedAt: 'desc' },
       });
 
-      // Format hasil query agar sesuai dengan yang dibutuhkan frontend
       const formattedChats = chatContents.map((chat) => ({
         id: chat.chatId,
-        // Judul diambil dari pesan pertama, atau 'New Chat' jika tidak ada pesan
         title: chat.messages[0]?.content.substring(0, 50) || 'New Chat',
         updatedAt: chat.updatedAt,
         createdAt: chat.createdAt,
@@ -58,12 +48,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Missing or invalid chat_id' });
       }
 
-      // Hapus ChatContent. Karena ada 'onDelete: Cascade',
-      // semua Message yang terhubung akan ikut terhapus otomatis oleh database.
       await prisma.chatContent.deleteMany({
         where: {
           chatId: chatId,
-          userId: userId, // Pastikan user hanya bisa menghapus chat miliknya sendiri
+          // FIX: Mengubah 'userId' menjadi 'user_id' di sini juga
+          user_id: userId, 
         },
       });
 
