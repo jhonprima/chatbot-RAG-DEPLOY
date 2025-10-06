@@ -1,72 +1,57 @@
+// File: pages/api/user-chats.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { pool } from '@/utils/db';
+import { PrismaClient } from '@prisma/client'; // Ganti impor pool dengan PrismaClient
+import { validate as isUUID } from 'uuid';
+
+// Inisialisasi Prisma Client
+const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // 1. Hanya izinkan metode GET
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET']);
-    return res.status(405).json({
-      error: 'Method Not Allowed',
-      message: `Hanya metode GET yang diizinkan`,
-    });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   // 2. Ambil dan validasi user_id dari query
-  const { user_id } = req.query;
+  const userId = req.query.user_id as string;
 
-  if (!user_id || typeof user_id !== 'string') {
-    return res.status(400).json({
-      error: 'Bad Request',
-      message: 'Parameter user_id diperlukan dan harus berupa string',
-    });
+  if (!userId) {
+    return res.status(400).json({ error: 'Bad Request', message: 'Parameter user_id diperlukan' });
   }
-
-  // 3. Validasi format UUID (opsional)
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user_id);
-  if (!isUUID) {
-    return res.status(400).json({
-      error: 'Bad Request',
-      message: 'Format user_id tidak valid',
-    });
+  if (!isUUID(userId)) {
+    return res.status(400).json({ error: 'Bad Request', message: 'Format user_id tidak valid' });
   }
 
   try {
-    // 4. Query database
-    const result = await pool.query(
-      `SELECT 
-         id, 
-         title, 
-         TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at
-       FROM chats 
-       WHERE user_id = $1 
-       ORDER BY created_at DESC
-       LIMIT 100`,
-      [user_id]
-    );
+    // 4. Ganti query SQL manual dengan prisma.chatContent.findMany
+    const chats = await prisma.chatContent.findMany({
+      where: {
+        userId: userId,
+      },
+      // Ambil pesan pertama untuk judul dan hitung total pesan
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+        },
+        _count: {
+          select: { messages: true },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      take: 100, // Sama seperti LIMIT 100 di SQL
+    });
 
-    // 5. Format response
+    // 5. Format ulang hasil dari Prisma agar sesuai kebutuhan frontend
+    const formattedChats = chats.map(chat => ({
+      id: chat.chatId,
+      title: chat.messages[0]?.content.substring(0, 50) || 'New Chat',
+      createdAt: chat.createdAt,
+      updatedAt: chat.updatedAt,
+      message_count: chat._count.messages,
+    }));
+
     return res.status(200).json({
-      success: true,
-      data: result.rows,
-      count: result.rowCount,
-    });
-  } catch (error: any) {
-    console.error('Error fetching chats:', error);
-
-    // 6. Handle error khusus database
-    if (error.code === 'ECONNREFUSED') {
-      return res.status(503).json({
-        error: 'Service Unavailable',
-        message: 'Database tidak dapat diakses',
-      });
-    }
-
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Terjadi kesalahan saat mengambil data chat',
-    });
-  }
-}
-
-// ini adalah code penyesuaian yang kedua dalam impkementasi dan beberapa hal yang tidak akan pernah hadir dalam kita semua bebrapa hal yang tidak akan mudah dalam ebberapa hal 
-  
