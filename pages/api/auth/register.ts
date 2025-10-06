@@ -2,10 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-// GANTI: Hapus impor 'query' dan ganti dengan PrismaClient
 import { PrismaClient } from '@prisma/client';
 
-// Inisialisasi Prisma Client
 const prisma = new PrismaClient();
 
 type ResponseData = {
@@ -13,10 +11,9 @@ type ResponseData = {
   message?: string;
   token?: string;
   user?: {
-    // FIX: Tipe id diubah menjadi string karena kita menggunakan UUID
     id: string;
     email: string;
-    name?: string | null; // Nama bisa null
+    name?: string | null;
   };
 };
 
@@ -24,7 +21,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  // Hanya menerima method POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
@@ -33,7 +29,6 @@ export default async function handler(
   try {
     const { name, email, password } = req.body;
 
-    // --- Validasi input (TIDAK PERLU DIUBAH, sudah bagus) ---
     if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({ success: false, message: 'Input tidak valid' });
     }
@@ -52,7 +47,6 @@ export default async function handler(
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    // GANTI: Cek apakah email sudah terdaftar menggunakan Prisma
     const existingUser = await prisma.user.findUnique({
       where: {
         email: normalizedEmail,
@@ -63,8 +57,50 @@ export default async function handler(
       return res.status(409).json({ success: false, message: 'Email sudah terdaftar' });
     }
     
-    // Hash password (TIDAK PERLU DIUBAH)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // GANTI: Simpan user baru ke
+    // GANTI: Simpan user baru ke database menggunakan Prisma
+    const newUser = await prisma.user.create({
+      data: {
+        name: name,
+        email: normalizedEmail,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+    
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET tidak terdefinisi');
+    }
+
+    const token = jwt.sign(
+      { userId: newUser.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log(`User registered: ${newUser.id}`);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Registrasi berhasil',
+      token,
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+      },
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Terjadi kesalahan pada server' 
+    });
+  }
+}
