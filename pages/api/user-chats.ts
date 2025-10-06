@@ -67,3 +67,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+
+// ini adalah code penyesuaian yang kedua dalam impkementasi dan beberapa hal yang tidak akan pernah hadir dalam kita semua bebrapa hal yang tidak akan mudah dalam ebberapa hal 
+  

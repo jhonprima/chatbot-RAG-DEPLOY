@@ -89,15 +89,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('Response keys:', Object.keys(response || {}));
 
       let responseText = '';
-      if (response) {
-        responseText = response.text ||
-                       response.output ||
-                       response.answer ||
-                       response.result ||
-                       response.content ||
-                       response.response ||
-                       (typeof response === 'string' ? response : '') ||
-                       JSON.stringify(response);
+
+      if (typeof response === 'object' && response !== null) {
+        const r = response as any;
+        responseText = r.text ||
+                       r.output ||
+                       r.answer ||
+                       r.result ||
+                       r.content ||
+                       r.response ||
+                       JSON.stringify(r);
+      } else if (typeof response === 'string') {
+        responseText = response;
+      } else {
+        responseText = 'Maaf, tidak ada respons yang valid.';
       }
 
       if (!responseText || responseText.trim() === '' || responseText === '{}') {
@@ -105,10 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         responseText = 'Maaf, tidak dapat menghasilkan respons untuk pertanyaan Anda.';
       }
 
-      // ✅ INI VERSI YANG DIPAKAI: Format dokumen untuk disimpan
       const documentsToSave = sourceDocuments && Array.isArray(sourceDocuments) 
         ? sourceDocuments.map(doc => ({
-            pageContent: doc.pageContent || doc.text || '',
+            pageContent: doc.pageContent || '',
             metadata: doc.metadata || {},
           }))
         : [];
@@ -135,8 +139,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         [user_id, chat_id, sanitizedQuestion]
       );
 
-      // Simpan pesan assistant (❌ HAPUS definisi ulang documentsToSave di sini)
-      console.log('Saving to database - responseText:', responseText.substring(0, 100) + '...');
       await pool.query(
         `INSERT INTO messages (user_id, chat_id, content, role, source_documents, created_at, updated_at)
          VALUES ($1, $2, $3, 'assistant', $4, NOW(), NOW())`,
@@ -169,3 +171,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
+// ini adalah chat ts untuk cyuber ruby 

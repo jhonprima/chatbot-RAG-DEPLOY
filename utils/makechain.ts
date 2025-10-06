@@ -1,10 +1,9 @@
 import { ChatCohere } from "@langchain/cohere";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { RunnableSequence } from "@langchain/core/runnables";
+import { RunnableSequence, RunnableLambda } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import type { Document } from 'langchain/document';
-import type { VectorStoreRetriever } from 'langchain/vectorstores/base';
-
+import type { Document } from "langchain/document";
+import type { BaseRetriever } from "@langchain/core/retrievers";
 
 const CONDENSE_TEMPLATE = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 
@@ -30,21 +29,18 @@ If the question is not related to the context or chat history, politely respond 
 Question: {question}
 Helpful answer in markdown:`;
 
-const combineDocumentsFn = (docs: Document[], separator = '\n\n') => {
+const combineDocumentsFn = (docs: Document[], separator = "\n\n") => {
   const serializedDocs = docs.map((doc) => doc.pageContent);
   return serializedDocs.join(separator);
 };
 
-export const makeChain = (retriever: VectorStoreRetriever) => {
-  const condenseQuestionPrompt =
-    ChatPromptTemplate.fromTemplate(CONDENSE_TEMPLATE);
+export const makeChain = (retriever: BaseRetriever) => {
+  const condenseQuestionPrompt = ChatPromptTemplate.fromTemplate(CONDENSE_TEMPLATE);
   const answerPrompt = ChatPromptTemplate.fromTemplate(QA_TEMPLATE);
-  
 
   const model = new ChatCohere({
-      apiKey: process.env.COHERE_API_KEY,
+    apiKey: process.env.COHERE_API_KEY,
   });
-
 
   const standaloneQuestionChain = RunnableSequence.from([
     condenseQuestionPrompt,
@@ -52,10 +48,13 @@ export const makeChain = (retriever: VectorStoreRetriever) => {
     new StringOutputParser(),
   ]);
 
+  const retrievalChain = RunnableSequence.from([
+    retriever,
+    new RunnableLambda({
+      func: async (docs: Document[]) => combineDocumentsFn(docs),
+    }),
+  ]);
 
-  const retrievalChain = retriever.pipe(combineDocumentsFn);
-
- 
   const answerChain = RunnableSequence.from([
     {
       context: RunnableSequence.from([
@@ -69,7 +68,6 @@ export const makeChain = (retriever: VectorStoreRetriever) => {
     model,
     new StringOutputParser(),
   ]);
-
 
   const conversationalRetrievalQAChain = RunnableSequence.from([
     {

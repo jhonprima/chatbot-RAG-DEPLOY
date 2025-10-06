@@ -1,1 +1,12 @@
 node_modules
+.vercel
+# Virtual Environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env

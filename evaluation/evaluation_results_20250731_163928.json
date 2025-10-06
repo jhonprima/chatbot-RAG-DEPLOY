@@ -1,0 +1,918 @@
+  {
+  "metadata": {
+    "evaluation_date": "2025-07-31T16:39:28.677737",
+    "total_questions": 75,
+    "label_counts": {
+      "Good": 68,
+      "Medium": 7,
+      "Bad": 0
+    }
+  },
+  "overall_scores": {
+    "precision": 0.9540920257568359,
+    "recall": 0.9216709136962891,
+    "f1": 0.9371679425239563
+  },
+  "detailed_results": [
+    {
+      "question_id": 1,
+      "question": "Apa itu social engineering dalam dunia maya?",
+      "groundTruth": "Social engineering adalah teknik manipulasi psikologis untuk mendapatkan informasi atau akses tanpa peretasan teknis.",
+      "prediction": "Social engineering adalah teknik manipulasi psikologis untuk mendapatkan informasi atau akses tanpa peretasan teknis.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 2,
+      "question": "Apa fungsi firewall dalam keamanan jaringan?",
+      "groundTruth": "Firewall menyaring lalu lintas jaringan dan memblokir akses yang mencurigakan.",
+      "prediction": "Firewall berfungsi untuk mempercepat koneksi internet.",
+      "scores": {
+        "precision": 0.8228262066841125,
+        "recall": 0.7833929061889648,
+        "f1": 0.8026255369186401,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 3,
+      "question": "Jelaskan perbedaan malware dan spyware.",
+      "groundTruth": "Malware merusak sistem, spyware mencuri data dengan diam-diam.",
+      "prediction": "Malware dan spyware adalah hal yang sama, yaitu virus komputer.",
+      "scores": {
+        "precision": 0.7553713321685791,
+        "recall": 0.7149330377578735,
+        "f1": 0.7345960736274719,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 4,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware mengunci file pengguna dan meminta uang agar bisa dibuka kembali.",
+      "prediction": "Ransomware mengunci file pengguna dan meminta uang agar bisa dibuka kembali.",
+      "scores": {
+        "precision": 0.9999998807907104,
+        "recall": 0.9999998807907104,
+        "f1": 0.9999998807907104,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 5,
+      "question": "Apa bahaya menggunakan software bajakan?",
+      "groundTruth": "Software bajakan rawan malware dan tidak mendapat update keamanan.",
+      "prediction": "Software bajakan rawan malware dan tidak mendapat update keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 6,
+      "question": "Apa itu digital footprint?",
+      "groundTruth": "Semua aktivitas online kita yang bisa dilacak dan disalahgunakan jika tidak hati-hati.",
+      "prediction": "Digital footprint adalah jejak sidik jari pada layar ponsel.",
+      "scores": {
+        "precision": 0.6756938695907593,
+        "recall": 0.6576626896858215,
+        "f1": 0.6665562987327576,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 7,
+      "question": "Apa itu cyberbullying?",
+      "groundTruth": "Tindakan merundung atau melecehkan seseorang lewat dunia maya.",
+      "prediction": "Tindakan merundung atau melecehkan seseorang lewat dunia maya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 8,
+      "question": "Apa yang dimaksud dengan two-factor authentication (2FA)?",
+      "groundTruth": "2FA adalah metode keamanan dengan dua lapisan verifikasi agar akun lebih aman.",
+      "prediction": "2fa adalah metode keamanan dengan dua lapisan verifikasi agar akun lebih aman.",
+      "scores": {
+        "precision": 0.9885927438735962,
+        "recall": 0.9885927438735962,
+        "f1": 0.9885927438735962,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 9,
+      "question": "Bagaimana cara kerja VPN dalam melindungi data?",
+      "groundTruth": "VPN menyembunyikan IP dan mengenkripsi koneksi internet agar data aman.",
+      "prediction": "VPN adalah antivirus yang melindungi dari serangan siber.",
+      "scores": {
+        "precision": 0.7567605972290039,
+        "recall": 0.7439077496528625,
+        "f1": 0.7502791881561279,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 10,
+      "question": "Apa itu data breach?",
+      "groundTruth": "Kebocoran data penting yang bisa dimanfaatkan untuk kejahatan siber.",
+      "prediction": "Kebocoran data penting yang bisa dimanfaatkan untuk kejahatan siber.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 11,
+      "question": "Apa yang harus diketahui anak-anak tentang malware?",
+      "groundTruth": "Anak-anak perlu memahami dasar-dasar malware, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "prediction": "Anak-anak perlu memahami dasar-dasar malware, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "scores": {
+        "precision": 0.9999999403953552,
+        "recall": 0.9999999403953552,
+        "f1": 0.9999999403953552,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 12,
+      "question": "Apa yang harus diketahui anak-anak tentang phishing?",
+      "groundTruth": "Anak-anak perlu memahami dasar-dasar phishing, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "prediction": "Phishing adalah upaya untuk mencuri data penting seperti kata sandi.",
+      "scores": {
+        "precision": 0.7460697293281555,
+        "recall": 0.688419759273529,
+        "f1": 0.7160863280296326,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 13,
+      "question": "Apa yang harus diketahui anak-anak tentang jejak digital?",
+      "groundTruth": "Anak-anak perlu memahami dasar-dasar jejak digital, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "prediction": "Anak-anak perlu memahami dasar-dasar jejak digital, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "scores": {
+        "precision": 0.9999999403953552,
+        "recall": 0.9999999403953552,
+        "f1": 0.9999999403953552,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 14,
+      "question": "Apa yang harus diketahui anak-anak tentang VPN?",
+      "groundTruth": "Anak-anak perlu memahami dasar-dasar VPN, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "prediction": "VPN adalah aplikasi untuk bermain game online.",
+      "scores": {
+        "precision": 0.7706289291381836,
+        "recall": 0.6645997762680054,
+        "f1": 0.7136978507041931,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 15,
+      "question": "Apa yang harus diketahui anak-anak tentang cyberbullying?",
+      "groundTruth": "Anak-anak perlu memahami dasar-dasar cyberbullying, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "prediction": "anak-anak perlu memahami dasar-dasar cyberbullying, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "scores": {
+        "precision": 0.9914321303367615,
+        "recall": 0.9914321303367615,
+        "f1": 0.9914321303367615,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 16,
+      "question": "Apa yang harus diketahui anak-anak tentang hak cipta?",
+      "groundTruth": "Anak-anak perlu memahami dasar-dasar hak cipta, risikonya, serta cara melindungi diri secara aman dan bertanggung jawab saat menggunakan teknologi digital.",
+      "prediction": "Hak cipta adalah aturan tentang menyalin karya orang lain.",
+      "scores": {
+        "precision": 0.7091981172561646,
+        "recall": 0.6732577681541443,
+        "f1": 0.6907607913017273,
+        "label": "Medium"
+      }
+    },
+    {
+      "question_id": 17,
+      "question": "Kenapa penting mengunci perangkat dengan PIN?",
+      "groundTruth": "Mengunci perangkat dengan PIN penting karena membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "prediction": "Karena PIN membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "scores": {
+        "precision": 0.9526394605636597,
+        "recall": 0.9064962863922119,
+        "f1": 0.9289952516555786,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 18,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "prediction": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 19,
+      "question": "Apa yang dimaksud dengan spam?",
+      "groundTruth": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "prediction": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 20,
+      "question": "Bagaimana cara membedakan situs asli dan palsu?",
+      "groundTruth": "Untuk membedakan situs asli dan palsu, periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "prediction": "Periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "scores": {
+        "precision": 0.9507386684417725,
+        "recall": 0.8755993843078613,
+        "f1": 0.9116232991218567,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 21,
+      "question": "Mengapa tidak boleh menggunakan Wi-Fi publik tanpa VPN?",
+      "groundTruth": "Tidak boleh menggunakan Wi-Fi publik tanpa VPN karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "prediction": "Karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "scores": {
+        "precision": 0.9410107135772705,
+        "recall": 0.8943199515342712,
+        "f1": 0.9170714020729065,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 22,
+      "question": "Apa itu 2FA?",
+      "groundTruth": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "prediction": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 23,
+      "question": "Apa risiko membagikan foto pribadi secara online?",
+      "groundTruth": "Risiko membagikan foto pribadi secara online adalah foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "prediction": "Foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "scores": {
+        "precision": 0.9513167142868042,
+        "recall": 0.836868166923523,
+        "f1": 0.8904299139976501,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 24,
+      "question": "Apa itu cyberstalking?",
+      "groundTruth": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "prediction": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 25,
+      "question": "Mengapa perlu update aplikasi secara berkala?",
+      "groundTruth": "Perlu update aplikasi secara berkala agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "prediction": "Agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "scores": {
+        "precision": 0.9276825785636902,
+        "recall": 0.8565704226493835,
+        "f1": 0.890709400177002,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 26,
+      "question": "Apa itu firewall?",
+      "groundTruth": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "prediction": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 27,
+      "question": "Kenapa penting mengunci perangkat dengan PIN?",
+      "groundTruth": "Mengunci perangkat dengan PIN penting karena membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "prediction": "Karena PIN membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "scores": {
+        "precision": 0.9526394605636597,
+        "recall": 0.9064962863922119,
+        "f1": 0.9289952516555786,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 28,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "prediction": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 29,
+      "question": "Apa yang dimaksud dengan spam?",
+      "groundTruth": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "prediction": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 30,
+      "question": "Bagaimana cara membedakan situs asli dan palsu?",
+      "groundTruth": "Untuk membedakan situs asli dan palsu, periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "prediction": "Periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "scores": {
+        "precision": 0.9507386684417725,
+        "recall": 0.8755993843078613,
+        "f1": 0.9116232991218567,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 31,
+      "question": "Mengapa tidak boleh menggunakan Wi-Fi publik tanpa VPN?",
+      "groundTruth": "Tidak boleh menggunakan Wi-Fi publik tanpa VPN karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "prediction": "Karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "scores": {
+        "precision": 0.9410107135772705,
+        "recall": 0.8943199515342712,
+        "f1": 0.9170714020729065,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 32,
+      "question": "Apa itu 2FA?",
+      "groundTruth": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "prediction": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 33,
+      "question": "Apa risiko membagikan foto pribadi secara online?",
+      "groundTruth": "Risiko membagikan foto pribadi secara online adalah foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "prediction": "Foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "scores": {
+        "precision": 0.9513167142868042,
+        "recall": 0.836868166923523,
+        "f1": 0.8904299139976501,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 34,
+      "question": "Apa itu cyberstalking?",
+      "groundTruth": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "prediction": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 35,
+      "question": "Mengapa perlu update aplikasi secara berkala?",
+      "groundTruth": "Perlu update aplikasi secara berkala agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "prediction": "Agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "scores": {
+        "precision": 0.9276825785636902,
+        "recall": 0.8565704226493835,
+        "f1": 0.890709400177002,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 36,
+      "question": "Apa itu firewall?",
+      "groundTruth": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "prediction": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 37,
+      "question": "Kenapa penting mengunci perangkat dengan PIN?",
+      "groundTruth": "Mengunci perangkat dengan PIN penting karena membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "prediction": "Karena PIN membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "scores": {
+        "precision": 0.9526394605636597,
+        "recall": 0.9064962863922119,
+        "f1": 0.9289952516555786,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 38,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "prediction": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 39,
+      "question": "Apa yang dimaksud dengan spam?",
+      "groundTruth": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "prediction": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 40,
+      "question": "Bagaimana cara membedakan situs asli dan palsu?",
+      "groundTruth": "Untuk membedakan situs asli dan palsu, periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "prediction": "Periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "scores": {
+        "precision": 0.9507386684417725,
+        "recall": 0.8755993843078613,
+        "f1": 0.9116232991218567,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 41,
+      "question": "Mengapa tidak boleh menggunakan Wi-Fi publik tanpa VPN?",
+      "groundTruth": "Tidak boleh menggunakan Wi-Fi publik tanpa VPN karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "prediction": "Karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "scores": {
+        "precision": 0.9410107135772705,
+        "recall": 0.8943199515342712,
+        "f1": 0.9170714020729065,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 42,
+      "question": "Apa itu 2FA?",
+      "groundTruth": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "prediction": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 43,
+      "question": "Apa risiko membagikan foto pribadi secara online?",
+      "groundTruth": "Risiko membagikan foto pribadi secara online adalah foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "prediction": "Foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "scores": {
+        "precision": 0.9513167142868042,
+        "recall": 0.836868166923523,
+        "f1": 0.8904299139976501,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 44,
+      "question": "Apa itu cyberstalking?",
+      "groundTruth": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "prediction": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 45,
+      "question": "Mengapa perlu update aplikasi secara berkala?",
+      "groundTruth": "Perlu update aplikasi secara berkala agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "prediction": "Agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "scores": {
+        "precision": 0.9276825785636902,
+        "recall": 0.8565704226493835,
+        "f1": 0.890709400177002,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 46,
+      "question": "Apa itu firewall?",
+      "groundTruth": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "prediction": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 47,
+      "question": "Kenapa penting mengunci perangkat dengan PIN?",
+      "groundTruth": "Mengunci perangkat dengan PIN penting karena membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "prediction": "Karena PIN membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "scores": {
+        "precision": 0.9526394605636597,
+        "recall": 0.9064962863922119,
+        "f1": 0.9289952516555786,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 48,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "prediction": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 49,
+      "question": "Apa yang dimaksud dengan spam?",
+      "groundTruth": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "prediction": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 50,
+      "question": "Bagaimana cara membedakan situs asli dan palsu?",
+      "groundTruth": "Untuk membedakan situs asli dan palsu, periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "prediction": "Periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "scores": {
+        "precision": 0.9507386684417725,
+        "recall": 0.8755993843078613,
+        "f1": 0.9116232991218567,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 51,
+      "question": "Mengapa tidak boleh menggunakan Wi-Fi publik tanpa VPN?",
+      "groundTruth": "Tidak boleh menggunakan Wi-Fi publik tanpa VPN karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "prediction": "Karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "scores": {
+        "precision": 0.9410107135772705,
+        "recall": 0.8943199515342712,
+        "f1": 0.9170714020729065,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 52,
+      "question": "Apa itu 2FA?",
+      "groundTruth": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "prediction": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 53,
+      "question": "Apa risiko membagikan foto pribadi secara online?",
+      "groundTruth": "Risiko membagikan foto pribadi secara online adalah foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "prediction": "Foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "scores": {
+        "precision": 0.9513167142868042,
+        "recall": 0.836868166923523,
+        "f1": 0.8904299139976501,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 54,
+      "question": "Apa itu cyberstalking?",
+      "groundTruth": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "prediction": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 55,
+      "question": "Mengapa perlu update aplikasi secara berkala?",
+      "groundTruth": "Perlu update aplikasi secara berkala agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "prediction": "Agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "scores": {
+        "precision": 0.9276825785636902,
+        "recall": 0.8565704226493835,
+        "f1": 0.890709400177002,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 56,
+      "question": "Apa itu firewall?",
+      "groundTruth": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "prediction": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 57,
+      "question": "Kenapa penting mengunci perangkat dengan PIN?",
+      "groundTruth": "Mengunci perangkat dengan PIN penting karena membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "prediction": "Karena PIN membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "scores": {
+        "precision": 0.9526394605636597,
+        "recall": 0.9064962863922119,
+        "f1": 0.9289952516555786,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 58,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "prediction": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 59,
+      "question": "Apa yang dimaksud dengan spam?",
+      "groundTruth": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "prediction": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 60,
+      "question": "Bagaimana cara membedakan situs asli dan palsu?",
+      "groundTruth": "Untuk membedakan situs asli dan palsu, periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "prediction": "Periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "scores": {
+        "precision": 0.9507386684417725,
+        "recall": 0.8755993843078613,
+        "f1": 0.9116232991218567,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 61,
+      "question": "Mengapa tidak boleh menggunakan Wi-Fi publik tanpa VPN?",
+      "groundTruth": "Tidak boleh menggunakan Wi-Fi publik tanpa VPN karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "prediction": "Karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "scores": {
+        "precision": 0.9410107135772705,
+        "recall": 0.8943199515342712,
+        "f1": 0.9170714020729065,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 62,
+      "question": "Apa itu 2FA?",
+      "groundTruth": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "prediction": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 63,
+      "question": "Apa risiko membagikan foto pribadi secara online?",
+      "groundTruth": "Risiko membagikan foto pribadi secara online adalah foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "prediction": "Foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "scores": {
+        "precision": 0.9513167142868042,
+        "recall": 0.836868166923523,
+        "f1": 0.8904299139976501,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 64,
+      "question": "Apa itu cyberstalking?",
+      "groundTruth": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "prediction": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 65,
+      "question": "Mengapa perlu update aplikasi secara berkala?",
+      "groundTruth": "Perlu update aplikasi secara berkala agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "prediction": "Agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "scores": {
+        "precision": 0.9276825785636902,
+        "recall": 0.8565704226493835,
+        "f1": 0.890709400177002,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 66,
+      "question": "Apa itu firewall?",
+      "groundTruth": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "prediction": "Firewall adalah sistem yang digunakan untuk melindungi jaringan komputer dengan cara memblokir akses yang tidak sah.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 67,
+      "question": "Kenapa penting mengunci perangkat dengan PIN?",
+      "groundTruth": "Mengunci perangkat dengan PIN penting karena membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "prediction": "Karena PIN membantu mencegah orang lain mengakses data pribadi di perangkat kita.",
+      "scores": {
+        "precision": 0.9526394605636597,
+        "recall": 0.9064962863922119,
+        "f1": 0.9289952516555786,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 68,
+      "question": "Apa itu ransomware?",
+      "groundTruth": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "prediction": "Ransomware adalah jenis malware yang mengunci data pengguna dan meminta tebusan untuk membukanya.",
+      "scores": {
+        "precision": 1.0000001192092896,
+        "recall": 1.0000001192092896,
+        "f1": 1.0000001192092896,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 69,
+      "question": "Apa yang dimaksud dengan spam?",
+      "groundTruth": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "prediction": "Spam adalah pesan elektronik yang dikirim secara massal dan sering kali mengganggu atau berbahaya.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 70,
+      "question": "Bagaimana cara membedakan situs asli dan palsu?",
+      "groundTruth": "Untuk membedakan situs asli dan palsu, periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "prediction": "Periksa URL, lihat apakah ada ikon gembok, dan hindari mengklik tautan mencurigakan.",
+      "scores": {
+        "precision": 0.9507385492324829,
+        "recall": 0.8755993843078613,
+        "f1": 0.9116232395172119,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 71,
+      "question": "Mengapa tidak boleh menggunakan Wi-Fi publik tanpa VPN?",
+      "groundTruth": "Tidak boleh menggunakan Wi-Fi publik tanpa VPN karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "prediction": "Karena Wi-Fi publik dapat disadap dan membahayakan data pribadi tanpa perlindungan.",
+      "scores": {
+        "precision": 0.9410107135772705,
+        "recall": 0.8943199515342712,
+        "f1": 0.9170714020729065,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 72,
+      "question": "Apa itu 2FA?",
+      "groundTruth": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "prediction": "2FA atau Two-Factor Authentication adalah metode login dengan dua lapisan keamanan.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 73,
+      "question": "Apa risiko membagikan foto pribadi secara online?",
+      "groundTruth": "Risiko membagikan foto pribadi secara online adalah foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "prediction": "Foto bisa disalahgunakan, diubah, atau disebarkan tanpa izin.",
+      "scores": {
+        "precision": 0.9513167142868042,
+        "recall": 0.836868166923523,
+        "f1": 0.8904299139976501,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 74,
+      "question": "Apa itu cyberstalking?",
+      "groundTruth": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "prediction": "Cyberstalking adalah tindakan menguntit seseorang melalui internet secara terus-menerus.",
+      "scores": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "label": "Good"
+      }
+    },
+    {
+      "question_id": 75,
+      "question": "Mengapa perlu update aplikasi secara berkala?",
+      "groundTruth": "Perlu update aplikasi secara berkala agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "prediction": "Agar mendapatkan fitur baru dan keamanan dari bug yang telah diperbaiki.",
+      "scores": {
+        "precision": 0.9276825785636902,
+        "recall": 0.8565704226493835,
+        "f1": 0.890709400177002,
+        "label": "Good"
+      }
+    }
+  ]
+}

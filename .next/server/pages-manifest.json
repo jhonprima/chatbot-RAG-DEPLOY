@@ -3,5 +3,7 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/api/user-chats": "pages/api/user-chats.js"
+  "/api/user-chats": "pages/api/user-chats.js",
+  "/register": "pages/register.js",
+  "/login": "pages/login.js"
 }
