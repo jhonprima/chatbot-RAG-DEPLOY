@@ -1,21 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
+// ... (imports lainnya tetap sama) ...
 import { CohereEmbeddings } from '@langchain/cohere';
 import { PineconeStore } from '@langchain/pinecone';
 import { makeChain } from '@/utils/makechain';
 import { pinecone } from '@/utils/pinecone-client';
 import { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE } from '@/config/pinecone';
 
-// Inisialisasi Prisma Client
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const { question, history, userId, chatId } = req.body;
+    // FIX: Mengubah userId dan chatId menjadi user_id dan chat_id
+    const { question, history, user_id, chat_id } = req.body; 
 
-    // Validasi input
-    if (!question || !userId || !chatId) {
-      return res.status(400).json({ message: 'Missing required fields: question, userId, chatId' });
+    // Validasi input disesuaikan dengan snake_case
+    if (!question || !user_id || !chat_id) {
+      // Menggunakan nama variabel yang benar dalam pesan error
+      return res.status(400).json({ message: 'Missing required fields: question, user_id, chatId' }); 
     }
 
     const sanitizedQuestion = question.trim().replaceAll('\n', ' ');
@@ -51,22 +53,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Cari atau buat sesi chat (ChatContent)
       const chatContent = await prisma.chatContent.upsert({
         where: {
-          // FIX: Menggunakan snake_case untuk unique constraint gabungan (Paling Krusial)
           user_id_chat_id: { 
-            user_id: userId, // FIX: Menggunakan snake_case
-            chat_id: chatId, // FIX: Menggunakan snake_case
+            user_id: user_id, // Menggunakan user_id
+            chat_id: chat_id, // Menggunakan chat_id
           },
         },
-        // Jika tidak ditemukan, buat yang baru
         create: {
-          chat_id: chatId, // FIX: Menggunakan snake_case
+          chat_id: chat_id,
           user: {
-            connect: { id: userId },
+            connect: { id: user_id },
           },
         },
-        // Jika ditemukan, cukup perbarui timestamp-nya
         update: {
-          updated_at: new Date(), // FIX: Menggunakan snake_case
+          updated_at: new Date(),
         },
       });
 
@@ -77,9 +76,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             content: sanitizedQuestion,
             role: 'user',
             user: {
-              connect: { id: userId },
+              connect: { id: user_id }, // Menggunakan user_id
             },
-            // FIX: Menggunakan nama relasi snake_case
             chat_content: {
               connect: { id: chatContent.id },
             },
@@ -90,9 +88,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             content: responseText,
             role: 'assistant',
             user: {
-              connect: { id: userId },
+              connect: { id: user_id }, // Menggunakan user_id
             },
-            // FIX: Menggunakan nama relasi snake_case
             chat_content: {
               connect: { id: chatContent.id },
             },
