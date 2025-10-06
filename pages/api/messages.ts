@@ -25,21 +25,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const messages = await prisma.message.findMany({
       where: {
-        chatContent: {
-          // FIX: Menggunakan snake_case
+        // FIX TERAKHIR: Menggunakan nama relasi snake_case
+        chat_content: { 
+          // Inner properties sudah snake_case
           chat_id: chatId,
           user_id: userId,
         },
       },
       orderBy: {
-        // FIX: Menggunakan snake_case
         created_at: 'asc',
       },
       select: {
         id: true,
         content: true,
         role: true,
-        // FIX: Menggunakan snake_case
         created_at: true,
       },
     });

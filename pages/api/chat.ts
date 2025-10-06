@@ -43,18 +43,76 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         chat_history: pastMessages,
       });
 
-      // Anda bisa menyederhanakan cara mendapatkan teks respons jika Anda tahu kuncinya
       const responseText = (response as any).text || 'Maaf, saya tidak dapat menghasilkan respons.';
       const sourceDocuments = (response as any).sourceDocuments || [];
 
       // --- Interaksi Database dengan Prisma ---
 
       // Cari atau buat sesi chat (ChatContent)
-      // `upsert` adalah perintah create-or-update yang sangat efisien
       const chatContent = await prisma.chatContent.upsert({
         where: {
-          // Cari berdasarkan kombinasi unik userId dan chatId
-          userId_chatId: {
-            userId: userId,
-            chatId: chatId,
+          // FIX: Menggunakan snake_case untuk unique constraint gabungan (Paling Krusial)
+          user_id_chat_id: { 
+            user_id: userId, // FIX: Menggunakan snake_case
+            chat_id: chatId, // FIX: Menggunakan snake_case
           },
+        },
+        // Jika tidak ditemukan, buat yang baru
+        create: {
+          chat_id: chatId, // FIX: Menggunakan snake_case
+          user: {
+            connect: { id: userId },
+          },
+        },
+        // Jika ditemukan, cukup perbarui timestamp-nya
+        update: {
+          updated_at: new Date(), // FIX: Menggunakan snake_case
+        },
+      });
+
+      // Simpan pesan user dan pesan AI dalam satu transaksi
+      await prisma.$transaction([
+        prisma.message.create({
+          data: {
+            content: sanitizedQuestion,
+            role: 'user',
+            user: {
+              connect: { id: userId },
+            },
+            // FIX: Menggunakan nama relasi snake_case
+            chat_content: {
+              connect: { id: chatContent.id },
+            },
+          },
+        }),
+        prisma.message.create({
+          data: {
+            content: responseText,
+            role: 'assistant',
+            user: {
+              connect: { id: userId },
+            },
+            // FIX: Menggunakan nama relasi snake_case
+            chat_content: {
+              connect: { id: chatContent.id },
+            },
+          },
+        }),
+      ]);
+
+      return res.status(200).json({
+        text: responseText,
+        sourceDocuments,
+      });
+
+    } catch (error: any) {
+      console.error('Error processing chat:', error);
+      return res.status(500).json({
+        error: 'Failed to process chat request',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      });
+    }
+  } else {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+}
