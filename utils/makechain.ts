@@ -42,7 +42,7 @@ export const makeChain = (retriever: BaseRetriever) => {
   // FIX UTAMA: Menentukan model yang masih aktif (command-r)
   const model = new ChatCohere({
     apiKey: process.env.COHERE_API_KEY,
-    model: "command-r", // Mengganti command-r-plus atau default yang usang
+    model: "command", // Mengganti command-r-plus atau default yang usang
     temperature: 0, // Suhu rendah untuk jawaban yang lebih faktual (direkomendasikan untuk RAG)
   });
 
