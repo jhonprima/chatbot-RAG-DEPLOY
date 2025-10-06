@@ -1,8 +1,8 @@
+// pages/api/create-chat.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient, Prisma } from '@prisma/client'; // Impor Prisma
+import { PrismaClient, Prisma } from '@prisma/client';
 import { validate as isUUID } from 'uuid';
 
-// Inisialisasi Prisma Client
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,9 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { userId, chatId } = req.body; // 'title' tidak lagi digunakan
+  const { userId, chatId } = req.body;
 
-  // Validasi input disederhanakan
   if (!userId || !chatId) {
     return res.status(400).json({ error: 'Missing required fields: userId and chatId are required' });
   }
@@ -24,12 +23,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // GANTI: Buat ChatContent baru dengan satu perintah Prisma
-    // Ini menggantikan semua SELECT dan INSERT yang lama
     const newChat = await prisma.chatContent.create({
       data: {
-        chatId: chatId,
-        // Hubungkan langsung ke user yang ada menggunakan relasi
+        // FIX: Menggunakan snake_case agar sesuai dengan schema.prisma
+        chat_id: chatId,
         user: {
           connect: {
             id: userId,
@@ -42,4 +39,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(201).json({ message: 'Chat created successfully', chat: newChat });
 
   } catch (error: any) {
-    console.error('Error creating chat:', error
+    console.error('Error creating chat:', error);
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return res.status(409).json({ error: 'Chat with this ID already exists for this user' });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.status(500).json({ 
+      error: 'An unknown error occurred', 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+}

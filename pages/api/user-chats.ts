@@ -1,6 +1,6 @@
 // File: pages/api/user-chats.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client'; // Ganti impor pool dengan PrismaClient
+import { PrismaClient } from '@prisma/client';
 import { validate as isUUID } from 'uuid';
 
 // Inisialisasi Prisma Client
@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // 2. Ambil dan validasi user_id dari query
+  // Ambil user_id dari query
   const userId = req.query.user_id as string;
 
   if (!userId) {
@@ -24,34 +24,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 4. Ganti query SQL manual dengan prisma.chatContent.findMany
+    // 4. Query database dengan penamaan yang benar
     const chats = await prisma.chatContent.findMany({
       where: {
-        userId: userId,
+        // FIX: user_id
+        user_id: userId,
       },
-      // Ambil pesan pertama untuk judul dan hitung total pesan
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
-          take: 1,
+          // FIX: created_at
+          orderBy: { created_at: 'asc' }, 
+          take: 1, 
         },
         _count: {
           select: { messages: true },
         },
       },
       orderBy: {
-        updatedAt: 'desc',
+        // FIX: updated_at
+        updated_at: 'desc', 
       },
-      take: 100, // Sama seperti LIMIT 100 di SQL
+      take: 100, 
     });
 
     // 5. Format ulang hasil dari Prisma agar sesuai kebutuhan frontend
     const formattedChats = chats.map(chat => ({
-      id: chat.chatId,
+      // FIX: Menggunakan snake_case untuk membaca hasil dari Prisma
+      id: chat.chat_id, 
       title: chat.messages[0]?.content.substring(0, 50) || 'New Chat',
-      createdAt: chat.createdAt,
-      updatedAt: chat.updatedAt,
+      updatedAt: chat.updated_at,
+      createdAt: chat.created_at,
       message_count: chat._count.messages,
     }));
 
     return res.status(200).json({
+      success: true,
+      data: formattedChats,
+      count: formattedChats.length,
+    });
+  } catch (error: any) {
+    console.error('Error fetching user chats:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Terjadi kesalahan saat mengambil data chat',
+    });
+  }
+}

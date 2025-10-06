@@ -10,27 +10,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { userId, chatId } = req.query;
+  // Nama variabel di sini boleh camelCase, yang penting saat query harus snake_case
+  const userId = req.query.userId as string;
+  const chatId = req.query.chatId as string;
 
-  if (!userId || typeof userId !== 'string') {
+  if (!userId) {
     return res.status(400).json({ error: 'Missing or invalid userId parameter' });
   }
 
   try {
     // --- LOGIKA JIKA MENGAMBIL SATU CHAT SPESIFIK ---
-    if (chatId && typeof chatId === 'string') {
-      
-      // Ambil satu ChatContent beserta semua Message yang berelasi
+    if (chatId) {
       const chat = await prisma.chatContent.findFirst({
         where: {
-          chatId: chatId,
-          userId: userId,
+          // FIX: Menggunakan snake_case
+          chat_id: chatId,
+          user_id: userId,
         },
         include: {
-          // 'include' untuk mengambil semua pesan yang terhubung dengan sesi chat ini
           messages: {
             orderBy: {
-              createdAt: 'asc',
+              // FIX: Menggunakan snake_case
+              created_at: 'asc',
             },
           },
         },
@@ -40,32 +41,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // --- LOGIKA JIKA MENGAMBIL SEMUA CHAT MILIK USER ---
     } else {
-
-      // Logika ini sama seperti di file user-chats.ts sebelumnya
       const chats = await prisma.chatContent.findMany({
         where: {
-          userId: userId,
+          // FIX: Menggunakan snake_case
+          user_id: userId,
         },
         include: {
           messages: {
-            orderBy: { createdAt: 'asc' },
-            take: 1, // Ambil 1 pesan pertama untuk judul
+            orderBy: { 
+              // FIX: Menggunakan snake_case
+              created_at: 'asc' 
+            },
+            take: 1,
           },
           _count: {
-            select: { messages: true }, // Hitung total pesan
+            select: { messages: true },
           },
         },
         orderBy: {
-          updatedAt: 'desc',
+          // FIX: Menggunakan snake_case
+          updated_at: 'desc',
         },
       });
 
-      // Format data agar sesuai dengan yang dibutuhkan frontend
       const formattedChats = chats.map(chat => ({
-        id: chat.chatId,
+        // FIX: Menggunakan snake_case untuk membaca hasil dari Prisma
+        id: chat.chat_id,
         title: chat.messages[0]?.content.substring(0, 50) || 'New Chat',
-        updatedAt: chat.updatedAt,
-        createdAt: chat.createdAt,
+        updatedAt: chat.updated_at,
+        createdAt: chat.created_at,
         message_count: chat._count.messages,
       }));
 

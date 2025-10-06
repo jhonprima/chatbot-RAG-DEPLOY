@@ -23,28 +23,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Ganti semua logika query dengan satu perintah Prisma findMany
     const messages = await prisma.message.findMany({
-      // Filter pesan berdasarkan relasi ke ChatContent
       where: {
         chatContent: {
-          chatId: chatId,
-          userId: userId,
+          // FIX: Menggunakan snake_case
+          chat_id: chatId,
+          user_id: userId,
         },
       },
       orderBy: {
-        createdAt: 'asc',
+        // FIX: Menggunakan snake_case
+        created_at: 'asc',
       },
-      // Pilih field yang ingin ditampilkan (opsional, tapi praktik yang baik)
       select: {
         id: true,
         content: true,
         role: true,
-        createdAt: true,
+        // FIX: Menggunakan snake_case
+        created_at: true,
       },
     });
 
-    // Langsung kembalikan hasilnya. Prisma sudah mengembalikan array yang rapi.
     return res.status(200).json(messages);
 
   } catch (error: any) {

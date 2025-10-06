@@ -15,26 +15,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       const chatContents = await prisma.chatContent.findMany({
         where: {
-          // FIX: Mengubah 'userId' menjadi 'user_id' agar sesuai dengan schema.prisma
-          user_id: userId, 
+          user_id: userId,
         },
         include: {
           messages: {
-            orderBy: { createdAt: 'asc' },
+            // FIX: Menggunakan snake_case
+            orderBy: {
+              created_at: 'asc',
+            },
             take: 1,
           },
           _count: {
             select: { messages: true },
           },
         },
-        orderBy: { updatedAt: 'desc' },
+        // FIX: Menggunakan snake_case
+        orderBy: {
+          updated_at: 'desc',
+        },
       });
 
       const formattedChats = chatContents.map((chat) => ({
-        id: chat.chatId,
+        id: chat.chat_id,
         title: chat.messages[0]?.content.substring(0, 50) || 'New Chat',
-        updatedAt: chat.updatedAt,
-        createdAt: chat.createdAt,
+        // FIX: Menggunakan snake_case
+        updatedAt: chat.updated_at,
+        createdAt: chat.created_at,
         message_count: chat._count.messages,
       }));
 
@@ -50,15 +56,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       await prisma.chatContent.deleteMany({
         where: {
-          chatId: chatId,
-          // FIX: Mengubah 'userId' menjadi 'user_id' di sini juga
-          user_id: userId, 
+          chat_id: chatId,
+          user_id: userId,
         },
       });
 
       return res.status(200).json({ success: true });
     }
 
+    // FIX: Mengubah 4is05 menjadi 405
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('API error:', error);
